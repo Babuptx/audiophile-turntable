@@ -1,20 +1,22 @@
 import os
 
 def generate_player():
-    print("Building V60.0: Volume Percentage Display...")
+    print("Building V61.4: V61.3 Logic + Green LED Visuals...")
     
     html_content = f"""
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hybrid Turntable - V60</title>
+  <title>Hybrid Turntable - V61.4</title>
   <style>
     :root {{ 
         --bg-color: #151515; 
-        --led-active: #ff0000;   /* Red LED */
-        --led-standby: #4a0000;  /* Dim Red */
-        --led-off: #333; 
+        /* UPDATED LED COLORS (Green) */
+        --led-active: #39ff14;   /* Neon Green */
+        --led-standby: #1a4a1a;  /* Dim Green */
+        --led-off: #222; 
+        --ui-contrast: #fff;
     }}
 
     body {{ background-color: var(--bg-color); font-family: 'Arial', sans-serif; margin: 0; height: 100vh; width: 100vw; overflow: hidden; user-select: none; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; transition: background 0.5s; }}
@@ -22,43 +24,21 @@ def generate_player():
     #center-stage {{ display: flex; flex-direction: column; align-items: center; gap: 30px; margin-right: 250px; transition: margin 0.5s; }}
     #plinth, .btn-3d, #volume-container, .brand-btn {{ transition: all 0.5s ease; background-size: cover; background-position: center; }}
 
-    /* --- SKINS WITH CONTRAST VARIABLES --- */
-    
-    /* 1. GOLD: Dark Text */
-    body.skin-gold {{ --text-color: #e0d1b6; --vol-color: #222; }}
-    .skin-gold #plinth, .skin-gold .btn-3d, .skin-gold #volume-container, .skin-gold .brand-btn, .skin-gold #playlist-panel {{ 
-        background-color: #e0d1b6; 
-        background-image: repeating-linear-gradient(90deg, transparent 0, transparent 2px, rgba(0,0,0,0.03) 3px, transparent 4px), linear-gradient(135deg, #e0d1b6 0%, #f3eadd 40%, #e0d1b6 60%, #c4b496 100%); 
-        border: 1px solid rgba(255,255,255,0.4); 
-        box-shadow: 5px 5px 15px rgba(0,0,0,0.4), inset 1px 1px 1px rgba(255,255,255,0.6); 
-        color: #333; 
-    }}
+    /* --- SKINS (High Contrast Logic) --- */
+    body.skin-gold {{ --text-color: #000; --ui-contrast: #000; --vol-color: #222; }}
+    .skin-gold #plinth, .skin-gold .btn-3d, .skin-gold #volume-container, .skin-gold .brand-btn, .skin-gold #playlist-panel {{ background-color: #e0d1b6; background-image: repeating-linear-gradient(90deg, transparent 0, transparent 2px, rgba(0,0,0,0.03) 3px, transparent 4px), linear-gradient(135deg, #e0d1b6 0%, #f3eadd 40%, #e0d1b6 60%, #c4b496 100%); border: 1px solid rgba(255,255,255,0.4); box-shadow: 5px 5px 15px rgba(0,0,0,0.4), inset 1px 1px 1px rgba(255,255,255,0.6); color: #333; }}
     .skin-gold .brand-btn {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }}
     .skin-gold .arm-material {{ background: linear-gradient(90deg, #ccc, #fff, #ccc); }} 
     .skin-gold .base-material {{ background: radial-gradient(circle, #e8e8e8, #999); }}
 
-    /* 2. WOOD: White Text */
-    body.skin-wood {{ --text-color: #e3d0c2; --vol-color: #fff; }}
-    .skin-wood #plinth, .skin-wood .btn-3d, .skin-wood #volume-container, .skin-wood .brand-btn, .skin-wood #playlist-panel {{ 
-        background-color: #5d4037; 
-        background-image: repeating-linear-gradient(90deg, transparent 0px, transparent 2px, rgba(0,0,0,0.15) 3px, transparent 4px), repeating-radial-gradient(ellipse at 50% -20%, transparent 0, rgba(30,10,0,0.1) 10px, transparent 20px), linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 40%, rgba(0,0,0,0.2) 100%); 
-        border: 2px solid #3e2723; 
-        box-shadow: 5px 5px 15px rgba(0,0,0,0.6), inset 1px 1px 5px rgba(255,255,255,0.1); 
-        color: #e3d0c2; 
-    }}
+    body.skin-wood {{ --text-color: #fff; --ui-contrast: #fff; --vol-color: #fff; }}
+    .skin-wood #plinth, .skin-wood .btn-3d, .skin-wood #volume-container, .skin-wood .brand-btn, .skin-wood #playlist-panel {{ background-color: #5d4037; background-image: repeating-linear-gradient(90deg, transparent 0px, transparent 2px, rgba(0,0,0,0.15) 3px, transparent 4px), repeating-radial-gradient(ellipse at 50% -20%, transparent 0, rgba(30,10,0,0.1) 10px, transparent 20px), linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 40%, rgba(0,0,0,0.2) 100%); border: 2px solid #3e2723; box-shadow: 5px 5px 15px rgba(0,0,0,0.6), inset 1px 1px 5px rgba(255,255,255,0.1); color: #e3d0c2; }}
     .skin-wood .brand-btn {{ font-family: 'Arial Black', Gadget, sans-serif; font-weight: 900; letter-spacing: 0px; text-transform: uppercase; }}
     .skin-wood .arm-material {{ background: linear-gradient(90deg, #555, #777, #555); }}
     .skin-wood .base-material {{ background: radial-gradient(circle, #666, #333); }}
 
-    /* 3. MARBLE: Dark Text */
-    body.skin-marble {{ --text-color: #00d0ff; --vol-color: #000; }}
-    .skin-marble #plinth, .skin-marble .btn-3d, .skin-marble #volume-container, .skin-marble .brand-btn, .skin-marble #playlist-panel {{ 
-        background-color: #f0f0f0; 
-        background-image: radial-gradient(at 20% 20%, rgba(0,0,0,0.05) 0%, transparent 50%), linear-gradient(115deg, transparent 0%, rgba(0,0,0,0.03) 30%, transparent 30.5%), linear-gradient(45deg,  transparent 40%, rgba(0,0,0,0.02) 45%, transparent 50%); 
-        border: 1px solid #fff; 
-        box-shadow: 5px 5px 15px rgba(0,0,0,0.3); 
-        color: #333; 
-    }}
+    body.skin-marble {{ --text-color: #000; --ui-contrast: #000; --vol-color: #000; }}
+    .skin-marble #plinth, .skin-marble .btn-3d, .skin-marble #volume-container, .skin-marble .brand-btn, .skin-marble #playlist-panel {{ background-color: #f0f0f0; background-image: radial-gradient(at 20% 20%, rgba(0,0,0,0.05) 0%, transparent 50%), linear-gradient(115deg, transparent 0%, rgba(0,0,0,0.03) 30%, transparent 30.5%), linear-gradient(45deg,  transparent 40%, rgba(0,0,0,0.02) 45%, transparent 50%); border: 1px solid #fff; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); color: #333; }}
     .skin-marble .brand-btn {{ font-family: 'Verdana', sans-serif; font-weight: 100; letter-spacing: 3px; text-transform: uppercase; }}
     .skin-marble .arm-material {{ background: linear-gradient(90deg, #222, #444, #222); }}
     .skin-marble .base-material {{ background: radial-gradient(circle, #333, #000); }}
@@ -105,7 +85,7 @@ def generate_player():
 
     #metadata-container {{ width: 85vmin; height: 60px; background: none; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; z-index: 300; font-size: 22px; }}
     #scrolling-wrapper {{ white-space: nowrap; overflow: hidden; width: 100%; position: absolute; }}
-    #scrolling-text {{ display: inline-block; font-family: 'Arial Narrow', Arial, sans-serif; font-weight: normal; padding-left: 100%; letter-spacing: 2px; color: var(--text-color); transition: color 0.5s ease; }}
+    #scrolling-text {{ display: inline-block; font-family: 'Arial Narrow', Arial, sans-serif; font-weight: normal; padding-left: 100%; letter-spacing: 2px; color: var(--ui-contrast); transition: color 0.5s ease; }}
     @keyframes scroll-left {{ 0% {{ transform: translate(0, 0); }} 100% {{ transform: translate(-100%, 0); }} }}
 
     #controls-container {{ position: fixed; bottom: 40px; left: 100px; width: 160px; z-index: 200; display: flex; flex-direction: column; align-items: center; gap: 20px; }}
@@ -116,68 +96,40 @@ def generate_player():
     .track-item:hover {{ opacity: 1; background: rgba(255,255,255,0.1); }}
     .track-item.active {{ opacity: 1; background: rgba(0,0,0,0.2); border-left: 4px solid var(--led-active); font-weight: bold; padding-left: 8px; color: #fff; }}
 
-    #volume-container {{ 
-        position: relative; height: 180px; width: 80px; 
-        border-radius: 10px; display: flex; justify-content: center; align-items: center; 
-    }}
-    
-    /* --- NEW PERCENTAGE DISPLAY (TOP) --- */
-    #vol-percent {{
-        position: absolute; top: 10px;
-        font-family: 'Courier New', monospace; font-weight: bold; font-size: 12px;
-        color: var(--vol-color); opacity: 0.8; pointer-events: none;
-    }}
-
-    /* --- MOVED LABEL (BOTTOM) --- */
-    #volume-label {{ 
-        position: absolute; bottom: 8px; 
-        font-family: 'Arial', sans-serif; font-weight: bold; font-size: 12px; letter-spacing: 1px;
-        color: var(--vol-color); 
-        opacity: 0.9; pointer-events: none;
-    }}
-    
+    #volume-container {{ position: relative; height: 180px; width: 80px; border-radius: 10px; display: flex; justify-content: center; align-items: center; }}
+    #vol-percent {{ position: absolute; top: 10px; font-family: 'Courier New', monospace; font-weight: bold; font-size: 12px; color: var(--vol-color); opacity: 0.8; pointer-events: none; }}
+    #volume-label {{ position: absolute; bottom: 5px; font-family: 'Arial', sans-serif; font-weight: bold; font-size: 12px; letter-spacing: 1px; color: var(--vol-color); opacity: 0.9; pointer-events: none; }}
     input[type=range] {{ -webkit-appearance: none; width: 150px; height: 12px; background: transparent; transform: rotate(-90deg); cursor: pointer; z-index: 1; }}
     input[type=range]::-webkit-slider-runnable-track {{ width: 100%; height: 10px; background: #333; border-radius: 5px; box-shadow: inset 1px 1px 2px black; }}
-    input[type=range]::-webkit-slider-thumb {{ 
-        -webkit-appearance: none; height: 24px; width: 40px; 
-        border-radius: 4px; background: #555; margin-top: -7px;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.5); border: 1px solid #777;
-    }}
+    input[type=range]::-webkit-slider-thumb {{ -webkit-appearance: none; height: 24px; width: 40px; border-radius: 4px; background: #555; margin-top: -7px; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); border: 1px solid #777; }}
 
-    #transport-deck {{ 
-        display: flex; align-items: center; gap: 15px; 
-        background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 8px; 
-        border: 1px solid rgba(255,255,255,0.1); margin-top: 5px;
-    }}
-    .cue-btn {{
-        width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer;
-        background: linear-gradient(145deg, #444, #222); box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-        color: #fff; font-weight: bold; font-size: 14px; text-shadow: 0 0 5px var(--led-active);
-        display: flex; justify-content: center; align-items: center;
-    }}
+    #transport-deck {{ display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-top: 5px; }}
+    .cue-btn {{ width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(145deg, #444, #222); box-shadow: 2px 2px 5px rgba(0,0,0,0.5); color: #fff; font-weight: bold; font-size: 14px; text-shadow: 0 0 5px var(--led-active); display: flex; justify-content: center; align-items: center; }}
     .cue-btn:active {{ background: #111; transform: scale(0.95); }}
     
-    #time-display {{ 
-        font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; 
-        color: var(--led-active); background: #000; padding: 5px 15px; border-radius: 4px;
-        box-shadow: inset 0 0 5px rgba(255,0,0,0.2); border: 1px solid #333;
-        min-width: 140px; text-align: center;
-    }}
+    #time-display {{ font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; color: var(--ui-contrast); background: transparent; padding: 5px 15px; border-radius: 4px; min-width: 140px; text-align: center; }}
 
     .btn-3d {{ border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; position: relative; font-size: 18px; }}
     .btn-3d:active {{ transform: scale(0.98); }}
-    #speed-box {{ display: flex; gap: 20px; width: 100%; justify-content: space-between; }}
-    .speed-btn {{ width: 80px; height: 50px; padding: 0 10px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }}
-    .led-rect {{ width: 20px; height: 8px; border-radius: 2px; background-color: var(--led-off); box-shadow: inset 1px 1px 2px rgba(0,0,0,0.8); flex-shrink: 0; }}
-    .speed-btn.active .led-rect {{ background-color: var(--led-active); box-shadow: 0 0 8px var(--led-active); }}
     
+    /* NEW SPEED CONTROLS */
+    #speed-box {{ display: flex; flex-direction: column; align-items: center; gap: 5px; width: 100%; }}
+    #speed-leds {{ display: flex; gap: 8px; margin-bottom: 5px; }}
+    .speed-led {{ width: 24px; height: 8px; border-radius: 2px; background-color: var(--led-standby); box-shadow: inset 1px 1px 2px rgba(0,0,0,0.8); position: relative; transition: background-color 0.2s; }}
+    .speed-led.active {{ background-color: var(--led-active); box-shadow: 0 0 8px var(--led-active); }}
+    .speed-led::after {{ content: attr(data-rpm); position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--ui-contrast); font-family: 'Arial'; font-weight: bold; }}
+    #speedBtn {{ width: 120px; height: 40px; font-size: 14px; font-weight: bold; color: #333; }}
+
     #playBtn {{ width: 140px; height: 140px; flex-direction: column; gap: 20px; font-size: 20px; }}
-    #playBtn .led-rect {{ position: static; width: 50px; height: 12px; background-color: var(--led-standby); box-shadow: 0 0 8px var(--led-standby); transition: background-color 0.2s; border: 1px solid rgba(0,0,0,0.5); }}
+    #playBtn .led-rect {{ position: static; width: 50px; height: 12px; background-color: var(--led-standby); box-shadow: 0 0 8px var(--led-standby); transition: background-color 0.2s; border: 1px solid rgba(0,0,0,0.5); border-radius: 2px; }}
 
     .brand-btn {{ margin-top: 20px; font-size: 20px; border-radius: 6px; padding: 12px 25px; cursor: pointer; white-space: nowrap; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }}
     .round-btn {{ width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; font-size: 10px; font-weight: bold; letter-spacing: 1px; color: #333; box-shadow: 5px 5px 10px rgba(0,0,0,0.5), inset 1px 1px 1px rgba(255,255,255,0.2); margin: 0 auto; }}
     .round-btn svg {{ width: 24px; height: 24px; fill: #333; }}
     #button-row {{ display: flex; justify-content: space-around; width: 100%; margin-top: auto; }}
+    
+    #footer-note {{ position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.3); font-size: 10px; font-family: 'Arial', sans-serif; letter-spacing: 1px; pointer-events: none; z-index: 500; }}
+
     #urlModal {{ display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }}
     #modalContent {{ background: #222; border: 2px solid #555; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; gap: 15px; width: 300px; }}
     #urlInput {{ padding: 10px; border-radius: 4px; border: none; }}
@@ -193,8 +145,9 @@ def generate_player():
   <div id="urlModal">
       <div id="modalContent">
           <h3 style="color:white; margin:0;">Load YouTube Link</h3>
+          <p style="color:#aaa; font-size:12px; margin-top:5px;">Supports Video or Playlist URLs</p>
           <input type="text" id="urlInput" placeholder="Paste YouTube URL here...">
-          <button id="loadUrlBtn">LOAD TRACK</button>
+          <button id="loadUrlBtn">LOAD TRACK / PLAYLIST</button>
           <button id="cancelBtn">CANCEL</button>
       </div>
   </div>
@@ -228,16 +181,19 @@ def generate_player():
   <div id="controls-container">
     <div id="volume-container">
         <span id="vol-percent">100%</span>
-        
         <input type="range" id="volume" min="0" max="100" step="1" value="100">
-        
         <span id="volume-label">Vol</span>
     </div>
     
     <div id="speed-box">
-        <button class="btn-3d speed-btn active" id="btn33">33 <div class="led-rect"></div></button>
-        <button class="btn-3d speed-btn" id="btn45">45 <div class="led-rect"></div></button>
+        <div id="speed-leds">
+            <div class="speed-led active" id="led33" data-rpm="33"></div>
+            <div class="speed-led" id="led45" data-rpm="45"></div>
+            <div class="speed-led" id="led78" data-rpm="78"></div>
+        </div>
+        <button class="btn-3d" id="speedBtn">rpm</button>
     </div>
+
     <button class="btn-3d" id="playBtn">START / STOP<div class="led-rect" id="status-led"></div></button>
     <button class="brand-btn" id="brandBtn">Technics SL-1300G</button>
     
@@ -257,8 +213,9 @@ def generate_player():
           <button class="btn-3d round-btn" id="streamBtn"><svg viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>STREAM</button>
       </div>
   </div>
+  
+  <div id="footer-note">Dedicated to the Audiophile Community | BabuPtx</div>
 
-  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     let mode = 'LOCAL';
     let audioFiles = []; let trackNames = []; let imageFiles = []; let currentTrackIndex = 0; 
@@ -285,42 +242,80 @@ def generate_player():
     const urlInput = document.getElementById('urlInput');
     const playlistPanel = document.getElementById('playlist-panel');
     const volPercent = document.getElementById('vol-percent');
+    
+    // NEW SPEED LOGIC
+    const speeds = [33, 45, 78];
+    const speedMultipliers = [1.0, 1.35, 2.35];
+    const platterDurations = ['1.8s', '1.33s', '0.76s'];
+    let currentSpeedIdx = 0;
+    const led33 = document.getElementById('led33');
+    const led45 = document.getElementById('led45');
+    const led78 = document.getElementById('led78');
 
     const skins = [
-        {{ code: 'skin-gold', name: 'Technics SL-1300G', textColor: '#e0d1b6' }}, 
-        {{ code: 'skin-wood', name: 'Denon DP-3000NE', textColor: '#e3d0c2' }}, 
-        {{ code: 'skin-marble', name: 'Pro-Ject XA', textColor: '#00d0ff' }}
+        {{ code: 'skin-gold', name: 'Technics SL-1300G', textColor: '#000' }}, 
+        {{ code: 'skin-wood', name: 'Denon DP-3000NE', textColor: '#fff' }}, 
+        {{ code: 'skin-marble', name: 'Pro-Ject XA', textColor: '#000' }}
     ];
     let currentSkinIndex = 0;
-    scrollingText.style.color = skins[0].textColor;
+    
+    // HIGH CONTRAST UPDATE
+    function updateColors() {{
+        scrollingText.style.color = skins[currentSkinIndex].textColor;
+        timeDisplay.style.color = skins[currentSkinIndex].textColor;
+        volPercent.style.color = skins[currentSkinIndex].textColor;
+        document.body.style.setProperty('--ui-contrast', skins[currentSkinIndex].textColor);
+    }}
+    updateColors();
 
     brandBtn.addEventListener('click', () => {{
         currentSkinIndex = (currentSkinIndex + 1) % skins.length;
         document.body.className = skins[currentSkinIndex].code;
         brandBtn.innerText = skins[currentSkinIndex].name;
-        scrollingText.style.color = skins[currentSkinIndex].textColor;
+        updateColors();
     }});
 
-    // YOUTUBE
-    function onYouTubeIframeAPIReady() {{
+    // --- YOUTUBE API (V61.3 - ORIGINAL WORKING LOGIC) ---
+    function loadYouTubeAPI() {{
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }}
+
+    window.onYouTubeIframeAPIReady = function() {{
         let origin = (window.location.protocol === 'file:') ? undefined : window.location.origin;
         ytPlayer = new YT.Player('ytPlayer', {{
             height: '100%', width: '100%',
             playerVars: {{ 'controls': 0, 'disablekb': 1, 'origin': origin, 'playsinline': 1 }},
             events: {{ 'onStateChange': onPlayerStateChange, 'onReady': onPlayerReady, 'onError': onPlayerError }}
         }});
-    }}
+        console.log("YouTube API Ready");
+    }};
+
     function onPlayerReady(e) {{ e.target.setVolume(100); e.target.unMute(); }}
-    function onPlayerError(e) {{ updateScrollingText("YouTube Error " + e.data); stopMotor(); }}
+    function onPlayerError(e) {{ updateScrollingText("YouTube Error: " + e.data); stopMotor(); }}
+    
     function onPlayerStateChange(e) {{
-        if (e.data == YT.PlayerState.PLAYING) {{ ytDuration = ytPlayer.getDuration(); startYTTimer(); }}
+        if (e.data == YT.PlayerState.PLAYING) {{ 
+            ytDuration = ytPlayer.getDuration(); 
+            startYTTimer();
+            let data = e.target.getVideoData();
+            if(data && data.title) {{
+                let title = data.title;
+                updateScrollingText("Stream: " + title);
+                playlistPanel.innerHTML = '<div class="track-item active" style="border-left: 4px solid var(--led-active);">Stream: ' + title + '</div>';
+            }}
+        }}
         else {{ stopYTTimer(); }}
         if (e.data == YT.PlayerState.ENDED) {{ stopMotor(); }}
     }}
     function startYTTimer() {{ stopYTTimer(); ytTimer = setInterval(() => {{ if(ytPlayer && ytPlayer.getCurrentTime) {{ let cur = ytPlayer.getCurrentTime(); updateTimeDisplay(cur, ytDuration); updateArmFromTime(cur, ytDuration); if(motorOn && ytPlayer.isMuted()) {{ ytPlayer.unMute(); }} if(motorOn && ytPlayer.getVolume() < 10) {{ ytPlayer.setVolume(100); }} }} }}, 500); }}
     function stopYTTimer() {{ if(ytTimer) clearInterval(ytTimer); }}
 
-    // TRANSPORT BUTTONS
+    loadYouTubeAPI();
+
+    // --- REST OF APP ---
     function skipTime(seconds) {{
         if (mode === 'LOCAL') {{
             audio.currentTime = Math.min(Math.max(audio.currentTime + seconds, 0), audio.duration);
@@ -332,30 +327,54 @@ def generate_player():
     document.getElementById('rwBtn').onclick = () => skipTime(-10);
     document.getElementById('ffBtn').onclick = () => skipTime(10);
 
-    // INPUTS
     document.getElementById('localBtn').onclick = () => {{ mode='LOCAL'; folderInput.click(); }};
     document.getElementById('streamBtn').onclick = () => {{
         if(window.location.protocol === 'file:') alert("Please use localhost:8000 for YouTube");
         mode='YOUTUBE'; urlModal.style.display='flex'; urlInput.focus(); 
     }};
     document.getElementById('cancelBtn').onclick = () => {{ urlModal.style.display='none'; }};
+    
+    function parseLink(url) {{
+        try {{
+            if (!url.match(/^https?:\/\//i)) url = 'https://' + url;
+            let u = new URL(url);
+            let id = u.searchParams.get("v");
+            let list = u.searchParams.get("list");
+            if(list) return {{ type: 'playlist', id: list }};
+            if(id) return {{ type: 'video', id: id }};
+            if(u.hostname.includes('youtu.be')) return {{ type: 'video', id: u.pathname.slice(1) }};
+        }} catch(e) {{ return null; }}
+        return null;
+    }}
+
     document.getElementById('loadUrlBtn').onclick = () => {{
-        let vidId = extractVideoID(urlInput.value);
-        if(vidId) {{
+        let inputVal = urlInput.value;
+        let data = parseLink(inputVal);
+        
+        // NO CHECKS HERE. If player isn't ready, let it fail silently or catch up later.
+        
+        if(data) {{
             stopMotor();
             urlModal.style.display='none'; 
-            labelImg.style.display = 'none'; ytContainer.classList.add('active');
-            playlistPanel.innerHTML = '<div style="text-align:center; padding:10px; opacity:0.6;">STREAMING YOUTUBE</div>';
-            if(ytPlayer && ytPlayer.loadVideoById) {{
-                ytPlayer.loadVideoById(vidId); ytPlayer.pauseVideo();
-                const oldGrooves = document.querySelectorAll('.groove-line'); oldGrooves.forEach(el => el.remove()); drawGrooves(1); 
-                armAngle = REST_ANGLE; updateArmVisual(); updateScrollingText("Streaming...");
+            labelImg.style.display = 'none'; 
+            ytContainer.classList.add('active');
+            
+            if(data.type === 'playlist') {{
+                playlistPanel.innerHTML = '<div style="text-align:center; padding:10px; opacity:0.6;">LOADING PLAYLIST...</div>';
+                if(ytPlayer && ytPlayer.loadPlaylist) ytPlayer.loadPlaylist({{list: data.id, listType: 'playlist'}});
+                updateScrollingText("Loading Playlist...");
+            }} else {{
+                playlistPanel.innerHTML = '<div style="text-align:center; padding:10px; opacity:0.6;">LOADING VIDEO...</div>';
+                if(ytPlayer && ytPlayer.loadVideoById) ytPlayer.loadVideoById(data.id);
+                updateScrollingText("Loading Video...");
             }}
-        }} else {{ alert("Invalid URL"); }}
+            
+            const oldGrooves = document.querySelectorAll('.groove-line'); oldGrooves.forEach(el => el.remove()); drawGrooves(1); 
+            armAngle = REST_ANGLE; updateArmVisual();
+            
+        }} else {{ alert("Invalid YouTube URL."); }}
     }};
-    function extractVideoID(url) {{ var match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/); return (match && match[2].length == 11) ? match[2] : null; }}
 
-    // LOCAL & PLAYLIST
     folderInput.addEventListener('change', (e) => {{
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
@@ -425,7 +444,6 @@ def generate_player():
         highlightTrack(index);
     }}
 
-    // CONTROLS
     document.getElementById('playBtn').addEventListener('click', () => {{
         motorOn = !motorOn;
         if (motorOn) {{
@@ -439,6 +457,9 @@ def generate_player():
         statusLed.style.backgroundColor="var(--led-active)"; statusLed.style.boxShadow="0 0 10px var(--led-active)";
         strobeLight.classList.add('on'); strobeReflect.classList.add('on'); record.classList.add('spinning');
         strobeDots.classList.add('spinning-reverse'); record.style.animationPlayState='running'; strobeDots.style.animationPlayState='running';
+        
+        // Apply Speed
+        record.style.animationDuration = platterDurations[currentSpeedIdx];
     }}
     function stopMotor() {{
         motorOn=false; statusLed.style.backgroundColor="var(--led-standby)"; statusLed.style.boxShadow="0 0 10px var(--led-standby)";
@@ -447,7 +468,6 @@ def generate_player():
         if(mode==='YOUTUBE' && ytPlayer) ytPlayer.pauseVideo();
     }}
 
-    // PHYSICS & UTILS
     const armStick = document.getElementById('arm-stick');
     armStick.addEventListener('mousedown', () => {{ isDragging = true; armRotate.style.transition = 'none'; }});
     document.addEventListener('mouseup', () => {{ 
@@ -499,16 +519,29 @@ def generate_player():
     function updateScrollingText(text) {{ scrollingText.style.animation = 'none'; scrollingText.innerText = text + "  *** " + text + "  *** "; scrollingText.offsetHeight; let duration = Math.max(10, text.length / 3) + 's'; scrollingText.style.animation = `scroll-left ${{duration}} linear infinite`; }}
     function drawGrooves(cnt) {{ let step = PLAYABLE_ARC / cnt; for (let i = 1; i < cnt; i++) {{ let groove = document.createElement('div'); groove.className = 'groove-line'; let rp = 100 - (((step*i)/PLAYABLE_ARC) * (100 - 35)); groove.style.width = rp + '%'; groove.style.height = rp + '%'; record.appendChild(groove); }} }}
     
-    // VOLUME LOGIC UPDATE
     document.getElementById('volume').addEventListener('input', (e) => {{ 
         let v = e.target.value; 
         audio.volume = v/100; 
         if(ytPlayer) ytPlayer.setVolume(v);
         volPercent.innerText = v + "%";
     }});
-    
-    document.getElementById('btn33').onclick = () => {{ audio.playbackRate = 1.0; if(ytPlayer) ytPlayer.setPlaybackRate(1.0); record.style.animationDuration = '1.8s'; strobeDots.style.animationDuration = '1.8s'; document.getElementById('btn33').classList.add('active'); document.getElementById('btn45').classList.remove('active'); }};
-    document.getElementById('btn45').onclick = () => {{ audio.playbackRate = 1.35; if(ytPlayer) ytPlayer.setPlaybackRate(1.25); record.style.animationDuration = '1.33s'; strobeDots.style.animationDuration = '1.33s'; document.getElementById('btn33').classList.remove('active'); document.getElementById('btn45').classList.add('active'); }};
+
+    // NEW SPEED TOGGLE LOGIC
+    document.getElementById('speedBtn').onclick = () => {{
+        currentSpeedIdx = (currentSpeedIdx + 1) % 3;
+        let mult = speedMultipliers[currentSpeedIdx];
+        audio.playbackRate = mult;
+        if(ytPlayer) ytPlayer.setPlaybackRate(Math.min(mult, 2.0)); 
+        if(motorOn) startVisuals(); // Update visuals immediately
+
+        led33.classList.remove('active');
+        led45.classList.remove('active');
+        led78.classList.remove('active');
+        
+        if(currentSpeedIdx === 0) led33.classList.add('active');
+        if(currentSpeedIdx === 1) led45.classList.add('active');
+        if(currentSpeedIdx === 2) led78.classList.add('active');
+    }};
 
   </script>
 </body>
@@ -518,7 +551,7 @@ def generate_player():
     with open("index.html", "w", encoding='utf-8') as f:
         f.write(html_content)
     
-    print("Success! V60.0 Volume Percentage Display Created.")
+    print("Success! V61.4 Visuals Only Update Created.")
     print("-------------------------------------------------")
     print("Refresh your browser at http://localhost:8000")
     print("-------------------------------------------------")
