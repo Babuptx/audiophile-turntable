@@ -2,7 +2,7 @@
 
 A high-fidelity, browser-based vinyl turntable simulator that bridges the gap between local audio collections and cloud streaming.
 
-**Live Demo:** [https://audiophile-turntable2.netlify.app](https://audiophile-turntable2.netlify.app)
+**Live Demo:** [https://audiophile-turntable.netlify.app](https://audiophile-turntable.netlify.app)
 
 ![Version](https://img.shields.io/badge/version-60.0-red) ![Status](https://img.shields.io/badge/build-passing-brightgreen)
 
