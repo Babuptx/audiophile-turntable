@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Technics SL-1300G Aluminum - V3.98</title>
+  <style>
+    :root { 
+        /* THEME */
+        --bg-color: #000;
+        --bg-gradient: radial-gradient(circle at 70% 50%, #2c3e50 0%, #1a1a1a 60%, #000000 100%);
+        
+        /* COLORS */
+        --led-active: #39ff14;   /* Green */
+        --led-cyan: #00ffff;     /* Cyan */
+        --led-red: #ff0000;      /* Red */
+        --led-pale: #889999;     
+        
+        /* MATERIALS */
+        --aluminum-base: linear-gradient(135deg, #d0d0d0 0%, #f0f0f0 40%, #c0c0c0 100%);
+        --aluminum-grain: repeating-linear-gradient(90deg, transparent 0, transparent 2px, rgba(0,0,0,0.05) 3px, transparent 4px);
+        --wood-texture: repeating-linear-gradient(90deg, #3e2723, #5d4037 2px, #3e2723 4px);
+        --knob-gradient: conic-gradient(from 180deg, #ddd, #fff, #bbb, #eee, #ccc, #fff, #ddd);
+        
+        /* VU METER */
+        --meter-bg: linear-gradient(to bottom, #2a1a0a 0%, #000 100%);
+        --meter-markings: #e0c0a0; 
+        --meter-amber-glow: radial-gradient(circle at 50% 100%, rgba(255, 160, 40, 0.4) 0%, rgba(255, 100, 0, 0.1) 60%, transparent 100%);
+    }
+
+    body { 
+        background-color: var(--bg-color); 
+        background-image: var(--bg-gradient);
+        font-family: 'Arial', sans-serif; margin: 0; height: 100vh; width: 100vw; overflow: hidden; 
+        user-select: none; 
+        display: flex; flex-direction: row; 
+    }
+
+    /* --- LEFT SIDEBAR CONSOLE --- */
+    #left-console {
+        width: 500px;
+        height: 100vh;
+        background: rgba(0,0,0,0.3);
+        border-right: 1px solid #333;
+        display: flex; flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        gap: 20px;
+        overflow-y: auto;
+        box-sizing: border-box;
+        z-index: 100;
+        backdrop-filter: blur(5px);
+    }
+    
+    /* RIGHT STAGE */
+    #main-stage-wrapper {
+        flex-grow: 1;
+        height: 100vh;
+        display: flex; justify-content: center; align-items: center;
+        position: relative;
+        padding-left: 50px;
+    }
+
+    /* --- HUD --- */
+    #digital-hud {
+        position: relative; width: 100%;
+        background: #dcdcdc; 
+        background-image: repeating-linear-gradient(90deg, transparent 0, transparent 2px, rgba(0,0,0,0.03) 3px, transparent 4px);
+        border: 2px solid #555; border-radius: 4px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        display: flex; flex-direction: column; padding: 10px; gap: 10px;
+        box-sizing: border-box;
+    }
+
+    #hud-top-row { display: flex; justify-content: flex-end; align-items: center; padding: 0 5px; } 
+    
+    #digital-display {
+        background: #111; border: 2px solid #444; border-radius: 4px;
+        padding: 5px 15px; display: flex; gap: 20px; align-items: center;
+        box-shadow: inset 0 0 10px #000;
+        white-space: nowrap;
+    }
+    .dig-group { display: flex; gap: 8px; align-items: center; }
+    .dig-label { font-size: 10px; color: #666; font-family: sans-serif; font-weight: bold; text-transform: uppercase; }
+    .dig-val { font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px; }
+    .dig-green { color: #00ff41; text-shadow: 0 0 5px #00ff41; }
+    .dig-amber { color: #ffaa00; text-shadow: 0 0 5px #ffaa00; }
+
+    /* --- VU SECTION --- */
+    #vu-section { display: flex; gap: 10px; height: 110px; }
+    
+    .vu-box { 
+        flex: 1; background: var(--meter-bg); 
+        border: 2px solid #666; border-radius: 4px; 
+        position: relative; overflow: hidden; 
+        box-shadow: inset 0 0 15px #000; 
+    }
+    .vu-glow { 
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+        background: var(--meter-amber-glow); 
+        opacity: 0.8; mix-blend-mode: screen; transition: opacity 0.1s; 
+    }
+    .vu-insignia {
+        position: absolute; top: 58px; width: 100%;
+        text-align: center; font-family: 'Arial', sans-serif; 
+        font-weight: normal; font-size: 12px; color: rgba(255, 255, 255, 0.7); 
+        pointer-events: none; z-index: 1;
+    }
+    .vu-track {
+        position: absolute; bottom: -60px; left: 50%; transform: translateX(-50%);
+        width: 140px; height: 140px;
+        border-radius: 50%;
+        border-top: 6px solid rgba(218, 165, 32, 0.5); /* Light Gold */
+        z-index: 1; pointer-events: none;
+    }
+    .vu-scale { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 100%; height: 100%; z-index: 2; }
+    .v-tick { position: absolute; bottom: -20px; left: 50%; transform-origin: bottom center; width: 1px; height: 100px; pointer-events: none; }
+    .v-tick::after { content: attr(data-val); position: absolute; top: 12px; left: 50%; transform: translate(-50%, 0); color: #e0c0a0; font-size: 9px; font-weight: bold; font-family: sans-serif; }
+    .v-red::after { color: #ff3333; }
+    
+    .vu-needle { 
+        position: absolute; bottom: 5px; left: 50%; 
+        width: 2px; height: 85px; background: #ff0000; 
+        transform-origin: bottom center; transform: translateX(-50%) rotate(-45deg); 
+        box-shadow: 0 0 4px rgba(0,0,0,0.8); z-index: 10; 
+        transition: transform 0.05s linear; 
+    }
+    .vu-needle::before { content:''; position:absolute; bottom:-4px; left:-3px; width:8px; height:8px; background:#333; border-radius:50%; }
+    .vu-ch-label { position: absolute; bottom: 5px; width: 100%; text-align: center; color: #aaa; font-size: 9px; font-weight: bold; letter-spacing: 1px; font-family: sans-serif; z-index: 11; }
+
+    #led-section { background: #000; border: 1px solid #444; padding: 8px; border-radius: 2px; display: flex; flex-direction: column; gap: 4px; }
+    .led-row { display: flex; align-items: center; gap: 8px; }
+    .led-label { color: #fff; font-size: 10px; font-weight: bold; font-family: sans-serif; width: 10px; }
+    .led-track { flex: 1; display: flex; gap: 2px; height: 8px; background: #111; padding: 1px; border-radius: 1px; }
+    .led-seg { flex: 1; background: #222; border-radius: 1px; }
+    .led-seg.lit-cyan { background: #00ffff; box-shadow: 0 0 4px #00ffff; }
+    .led-seg.lit-red { background: #ff0000; box-shadow: 0 0 4px #ff0000; }
+
+    /* PLAYLIST */
+    #playlist-panel { 
+        width: 100%; height: 200px; 
+        border-radius: 6px; padding: 15px; overflow-y: auto; 
+        background-color: #1a1a2e; 
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent; 
+        border: 1px solid rgba(255,255,255,0.1);
+        box-sizing: border-box;
+    }
+    .album-header { font-family: 'Impact', 'Charcoal', sans-serif; font-size: 18px; color: #fff; text-transform: uppercase; text-align: center; margin-bottom: 15px; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+    .track-item { padding: 8px 5px; cursor: pointer; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: rgba(255,255,255,0.7); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 10px; }
+    .track-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .track-item.active { background: rgba(255,255,255,0.1); color: var(--led-cyan); font-weight: bold; border-left: 4px solid var(--led-cyan); padding-left: 10px; }
+    .track-num { font-family: 'Courier New', monospace; color: rgba(255,255,255,0.4); min-width: 20px; }
+    .track-dur { font-family: 'Courier New', monospace; color: rgba(255,255,255,0.4); font-size: 11px; }
+
+    /* CONTROLS HOUSING */
+    #controls-container { 
+        position: relative; width: 100%;
+        background-color: #e0e0e0;
+        border: 2px solid #bbb; border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.6), inset 1px 1px 0 #fff;
+        padding: 20px; box-sizing: border-box;
+        display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+    #controls-container::before, #controls-container::after {
+        content: '+'; position: absolute; color: #888; font-family: monospace; font-size: 14px;
+        top: 5px; width: 10px; height: 10px; border-radius: 50%; border: 1px solid #999;
+        display: flex; justify-content: center; align-items: center; background: #eee;
+    }
+    #controls-container::before { left: 5px; } #controls-container::after { right: 5px; }
+
+    /* --- METAL KNOBS (CENTERED FIX) --- */
+    .knobs-row { display: flex; gap: 40px; justify-content: center; width: 100%; padding-top: 10px; }
+    
+    /* Wrapper ensures consistent size for dial + knob + label */
+    .knob-wrapper { 
+        position: relative; 
+        width: 100px; height: 130px; 
+        display: flex; flex-direction: column; align-items: center; 
+    }
+    
+    /* The Dial is the visual anchor (100x100) */
+    .knob-dial {
+        position: absolute; top: 0; left: 0; width: 100px; height: 100px;
+        border-radius: 50%;
+        background: repeating-conic-gradient(from 225deg, transparent 0deg, transparent 2deg, #000 2deg, #000 3deg, transparent 3deg, transparent 27deg); 
+        z-index: 1; pointer-events: none; opacity: 0.8;
+    }
+    
+    /* Knob centered relative to the 100px dial */
+    /* (100 - 70) / 2 = 15px Offset */
+    .metal-knob {
+        position: absolute; 
+        top: 15px; left: 50%; /* Center horizontally */
+        width: 70px; height: 70px; border-radius: 50%;
+        background: conic-gradient(from 180deg, #ccc, #fff, #bbb, #eee, #ccc, #fff, #ccc);
+        border: 1px solid #999;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.9);
+        cursor: ns-resize; z-index: 2;
+        /* Start with centered transform */
+        transform: translateX(-50%); 
+    }
+    .metal-knob::before { content: ''; position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px; border-radius: 50%; border: 1px dashed #999; opacity: 0.6; }
+    .metal-knob::after { content:''; position: absolute; top: 4px; left: 50%; width: 4px; height: 25px; background: #222; transform: translateX(-50%); border-radius: 2px; }
+
+    /* Min/Max Labels - Positioned relative to wrapper edges */
+    .dial-val { position: absolute; font-size: 11px; font-weight: bold; color: #444; font-family: sans-serif; pointer-events: none; bottom: 45px; }
+    .dv-min { left: 5px; }
+    .dv-max { right: 5px; }
+
+    /* Main Label - At bottom of wrapper */
+    .knob-label { 
+        position: absolute; bottom: 5px;
+        font-size: 10px; font-weight: 900; color: #111; 
+        text-shadow: 0 1px 0 rgba(255,255,255,0.5); text-transform: uppercase; 
+    }
+
+    /* RPM BUTTONS */
+    #rpm-group { display: flex; gap: 15px; margin-bottom: 5px; }
+    .rpm-btn {
+        width: 45px; height: 50px; 
+        background: linear-gradient(to bottom, #ddd, #bbb); border: 1px solid #888; border-radius: 3px;
+        display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 5px;
+        font-family: 'Arial'; font-weight: bold; font-size: 11px; color: #444;
+        cursor: pointer; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        padding-top: 10px;
+    }
+    .rpm-btn:active { transform: translateY(1px); box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
+    .rpm-btn::after { 
+        content: ''; width: 20px; height: 5px; 
+        background: #444; box-shadow: inset 0 0 2px #000; 
+        border-radius: 1px; transition: all 0.2s; 
+    }
+    body.powered-on .rpm-btn.active::after { background: var(--led-cyan); box-shadow: 0 0 8px var(--led-cyan); }
+
+    #startStopBtn {
+        width: 150px; height: 55px; background: linear-gradient(to bottom, #ddd, #bbb);
+        border: 1px solid #999; border-radius: 4px;
+        display: flex; justify-content: center; align-items: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 1px 1px 1px #fff;
+        cursor: pointer; position: relative;
+        font-family: 'Arial Black', sans-serif; font-size: 12px; color: #222; text-transform: uppercase;
+    }
+    #startStopBtn:active { transform: translateY(2px); box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+    .rect-led { position: absolute; top: 8px; width: 30px; height: 5px; background-color: var(--led-pale); border: 1px solid #777; box-shadow: inset 0 0 2px rgba(0,0,0,0.2); transition: all 0.2s; }
+    body.powered-on .rect-led.lit { background-color: var(--led-cyan); box-shadow: 0 0 10px var(--led-cyan), 0 0 5px #fff; border-color: #fff; }
+
+    #powerBtn {
+        width: 70px; height: 70px; border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #eee, #bbb); border: 2px solid #999;
+        box-shadow: 4px 4px 10px rgba(0,0,0,0.4);
+        display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s;
+    }
+    #power-icon { font-size: 28px; color: #888; text-shadow: 0 1px 1px #fff; }
+    body.powered-on #powerBtn { background: radial-gradient(circle at 30% 30%, #333, #111); border-color: #555; box-shadow: 0 0 20px var(--led-cyan), inset 0 0 10px #000; }
+    body.powered-on #power-icon { color: var(--led-cyan); text-shadow: 0 0 10px var(--led-cyan); }
+
+    /* TRANSPORT */
+    #transport-deck { display: flex; align-items: center; gap: 15px; margin-top: 5px; width: 100%; justify-content: center; }
+    .cue-btn { 
+        width: 55px; height: 55px; 
+        border-radius: 4px; border: 1px solid #888; 
+        cursor: pointer; background: linear-gradient(to bottom, #eee, #ccc);
+        color: #444; font-weight: 900; font-size: 14px; 
+        display: flex; flex-direction: column; justify-content: flex-end; align-items: center; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: all 0.2s; position: relative; padding-bottom: 5px;
+    }
+    .cue-btn:active { transform: translateY(1px); }
+    .cue-btn .rect-led { top: 8px; width: 20px; height: 4px; } 
+
+    /* IO ROW */
+    #io-group { display: flex; gap: 20px; width: 100%; justify-content: center; margin-bottom: 5px; }
+    .round-btn { 
+        width: 60px; height: 60px; border-radius: 50%; font-size: 9px; flex-direction: column; gap: 2px; 
+        border: 2px solid #888; background: #ddd; cursor: pointer; display: flex; align-items: center; justify-content: center; 
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.4); font-weight: bold; color: #333; position: relative; 
+    }
+    .round-btn:active { transform: translateY(1px); }
+    .round-btn.active { background: #e0ffff; box-shadow: 0 0 15px var(--led-cyan); border-color: var(--led-cyan); color: #000; }
+    .round-btn svg { width: 24px; height: 24px; fill: #333; }
+    .eject-icon { font-size: 24px; line-height: 24px; margin-bottom: -5px; }
+
+    .technics-logo { font-family: 'Arial Black', sans-serif; font-size: 16px; font-weight: 900; color: #111; letter-spacing: 1px; margin-top: 5px; text-shadow: 1px 1px 0 #888, 2px 2px 2px rgba(0,0,0,0.5); text-transform: uppercase; }
+    #artToggleBtn { width: 100px; height: 25px; background: #333; color: #fff; font-size: 10px; font-weight: bold; border: 1px solid #555; border-radius: 4px; margin-bottom: 10px; cursor: pointer; }
+
+    /* TURNTABLE STAGE */
+    #center-stage { display: flex; flex-direction: column; align-items: center; gap: 30px; position: relative; }
+    #wood-base { position: relative; padding: 30px; background: var(--wood-texture); border-radius: 10px; box-shadow: 0 30px 60px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; }
+    #plinth { position: relative; width: 90vmin; height: 66vmin; border-radius: 6px; background-color: #dcdcdc; background-image: var(--aluminum-grain), var(--aluminum-base); border: 1px solid rgba(255,255,255,0.4); box-shadow: inset 1px 1px 2px rgba(255,255,255,0.9), inset -1px -1px 2px rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; }
+
+    /* STROBE TOWER */
+    #strobe-tower { 
+        position: absolute; bottom: 30px; left: 14%; width: 60px; height: 80px; background: linear-gradient(90deg, #999 0%, #fff 40%, #ccc 60%, #888 100%); border-radius: 5px 5px 0 0; box-shadow: 5px 5px 15px rgba(0,0,0,0.5), inset 0 1px 0 #fff; z-index: 50; display: flex; justify-content: center; padding-top: 15px; border: 1px solid #aaa; border-bottom: none; 
+    }
+    #strobe-tower::before { content: ''; position: absolute; top: 0; width: 100%; height: 25px; background: linear-gradient(to bottom, rgba(255,255,255,0.8), transparent); border-radius: 5px 5px 0 0; pointer-events: none; }
+    #strobe-light { width: 18px; height: 18px; background-color: #500; border-radius: 50%; box-shadow: inset 0 0 5px #000; transition: all 0.1s; border: 1px solid #333; }
+    #strobe-light.on { background-color: #f00; box-shadow: 0 0 20px #f00, 0 0 40px #f00; border-color: #f55; }
+    
+    /* PLATTER (Darker Rim) */
+    #platter { 
+        position: absolute; width: 63vmin; height: 63vmin; border-radius: 50%; 
+        background: radial-gradient(circle, #d0d0d0 60%, #a0a0a0 95%, #606060 100%); /* DARKER RIM */
+        box-shadow: 4px 8px 20px rgba(0,0,0,0.4); 
+        display: flex; justify-content: center; align-items: center; 
+        top: 50%; left: 48%; transform: translate(-50%, -50%); z-index: 2; 
+    }
+    /* Duller Dots */
+    #strobe-dots { 
+        position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; 
+        border-radius: 50%; 
+        border: 10px dotted #444; /* DULLER DOTS */
+        z-index: 2; 
+    }
+    
+    /* STROBE REFLECTION MASK */
+    #strobe-dots-active {
+        position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; border-radius: 50%; 
+        border: 12px dotted #ff0000; z-index: 3; opacity: 0; 
+        clip-path: polygon(0% 100%, 0% 70%, 20% 100%); 
+        filter: drop-shadow(0 0 8px #ff0000); 
+    }
+    #strobe-dots-active.on { opacity: 1; }
+
+    #record-container { width: 94%; height: 94%; border-radius: 50%; position: relative; z-index: 5; }
+    #record { width: 100%; height: 100%; border-radius: 50%; position: relative; transition: transform 0.1s linear; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    #record::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: conic-gradient(rgba(255,255,255,0) 0deg, rgba(255,255,255,0.1) 40deg, rgba(255,255,255,0.0) 60deg, rgba(255,255,255,0) 200deg, rgba(255,255,255,0.1) 220deg, rgba(255,255,255,0) 250deg); pointer-events: none; z-index: 10; }
+    .groove-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.15); pointer-events: none; z-index: 5; }
+    .spinning { animation: spin 1.8s infinite linear; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .strobe-cw { animation: spin-cw 0.5s linear infinite; }
+    .strobe-acw { animation: spin-acw 0.5s linear infinite; }
+    @keyframes spin-cw { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes spin-acw { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+    #label { width: 35%; height: 35%; background-color: #eee; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); border: 1px solid #111; z-index: 20; }
+    #label img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; transition: opacity 0.5s; }
+    #spindle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: radial-gradient(circle at 30% 30%, #e0e0e0, #888); border-radius: 50%; z-index: 30; box-shadow: 1px 2px 4px rgba(0,0,0,0.6); pointer-events: none; }
+
+    #arm-assembly { position: absolute; top: 30px; right: 30px; width: 170px; height: 170px; z-index: 100; }
+    #arm-base { position: absolute; top: 25px; left: 25px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, #e0e0e0, #999); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    #arm-rotate { position: absolute; top: 85px; left: 85px; width: 0; height: 0; transform-origin: center center; transform: rotate(0deg); transition: transform 0.05s linear; }
+    #arm-stick { position: absolute; top: 0; left: -11px; width: 22px; height: 45vmin; border-radius: 11px; background: linear-gradient(90deg, #ccc, #fff, #ccc); box-shadow: 8px 8px 15px rgba(0,0,0,0.3); cursor: grab; }
+    #arm-stick:active { cursor: grabbing; }
+    #headshell { position: absolute; bottom: -35px; left: -10px; width: 40px; height: 65px; background: #222; border-radius: 3px; box-shadow: 2px 5px 8px rgba(0,0,0,0.2); transform-origin: top center; transform: rotate(23deg); }
+
+    #pitch-container { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); width: 45px; height: 300px; background: #dcdcdc; border: 1px solid #aaa; border-radius: 4px; display: flex; justify-content: center; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2); z-index: 50; }
+    #pitch-slot { width: 6px; height: 260px; background: #222; margin-top: 20px; border-radius: 3px; position: relative; }
+    #pitch-knob { width: 35px; height: 50px; background: linear-gradient(to bottom, #eee, #fff, #ccc); border: 1px solid #888; border-radius: 3px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 4px 8px rgba(0,0,0,0.4); cursor: ns-resize; --pitch-led: var(--led-cyan); }
+    #pitch-knob::after { content:''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: #444; transition: background 0.1s, box-shadow 0.1s; }
+    body.powered-on #pitch-knob::after { background: var(--pitch-led); box-shadow: 0 0 6px var(--pitch-led); }
+    .pitch-text { position: absolute; right: -25px; top: 50%; transform: translateY(-50%) rotate(90deg); font-size: 10px; font-weight: bold; color: #555; }
+
+    #album-art-modal { position: absolute; top: 10%; right: 15%; width: 50vmin; height: 50vmin; background: #000; border: 10px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 200; display: none; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+    #album-art-modal.active { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    #modal-img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-controls { position: absolute; bottom: 0; width: 100%; height: 40px; background: rgba(0,0,0,0.7); display: flex; justify-content: space-between; align-items: center; padding: 0 10px; opacity: 0; transition: opacity 0.3s; }
+    #album-art-modal:hover .modal-controls { opacity: 1; }
+    .art-nav-btn { background: none; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 14px; }
+    
+    /* FEET RESTORED */
+    .foot { 
+        position: absolute; bottom: -20px; width: 80px; height: 40px; 
+        background: linear-gradient(to right, #222, #555, #222); 
+        border-radius: 0 0 20px 20px; 
+        box-shadow: 0 5px 10px rgba(0,0,0,0.8); 
+    }
+    #foot-left { left: 60px; } 
+    #foot-right { right: 60px; }
+    
+    /* DEDICATION FOOTER (Moved Under Table) */
+    .credit-footer { 
+        width: 100%; text-align: center; 
+        font-family: 'Segoe UI', Helvetica, Arial, sans-serif; 
+        font-size: 13px; color: #ffffff; letter-spacing: 2px; text-transform: uppercase; 
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8); opacity: 0.6; 
+        user-select: text; cursor: text; 
+        margin-top: 50px; /* Space from feet */
+    }
+
+    #urlModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
+    #modalContent { background: #222; border: 1px solid #555; padding: 30px; border-radius: 8px; display: flex; flex-direction: column; gap: 20px; width: 350px; }
+    #urlInput { padding: 12px; border-radius: 4px; border: 1px solid #444; background: #111; color: #fff; font-family: monospace; }
+    #loadUrlBtn { padding: 12px; background: #008888; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    #cancelBtn { padding: 12px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    #yt-container { width: 300%; height: 300%; position: absolute; top: -100%; left: -100%; pointer-events: none; opacity: 0; }
+  </style>
+</head>
+<body class="">
+
+  <audio id="audio" preload="auto"></audio>
+  <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none">
+
+  <div id="left-console">
+      
+      <div id="digital-hud">
+          <div id="hud-top-row">
+              <div id="digital-display">
+                  <div class="dig-group"><div class="dig-label">Counter</div><div class="dig-val dig-green" id="mech-counter">00000</div></div>
+                  <div class="dig-group" style="border-left:1px solid #333; padding-left:10px;"><div class="dig-label">Time</div><div class="dig-val dig-amber" id="time-hud">00:00</div></div>
+              </div>
+          </div>
+          <div id="vu-section">
+              <div class="vu-box">
+                  <div class="vu-insignia">VU</div><div class="vu-track"></div><div class="vu-glow"></div>
+                  <div class="vu-scale">
+                      <div class="v-tick" style="transform: rotate(-40deg);" data-val="-20"></div>
+                      <div class="v-tick" style="transform: rotate(-25deg);" data-val="-10"></div>
+                      <div class="v-tick" style="transform: rotate(-12deg);" data-val="-5"></div>
+                      <div class="v-tick" style="transform: rotate(0deg);" data-val="0"></div>
+                      <div class="v-tick v-red" style="transform: rotate(12deg);" data-val="+3"></div>
+                      <div class="v-tick v-red" style="transform: rotate(25deg);" data-val="+5"></div>
+                  </div>
+                  <div class="vu-needle" id="needle-l"></div>
+                  <div class="vu-ch-label">LEFT</div>
+              </div>
+              <div class="vu-box">
+                  <div class="vu-insignia">VU</div><div class="vu-track"></div><div class="vu-glow"></div>
+                  <div class="vu-scale">
+                      <div class="v-tick" style="transform: rotate(-40deg);" data-val="-20"></div>
+                      <div class="v-tick" style="transform: rotate(-25deg);" data-val="-10"></div>
+                      <div class="v-tick" style="transform: rotate(-12deg);" data-val="-5"></div>
+                      <div class="v-tick" style="transform: rotate(0deg);" data-val="0"></div>
+                      <div class="v-tick v-red" style="transform: rotate(12deg);" data-val="+3"></div>
+                      <div class="v-tick v-red" style="transform: rotate(25deg);" data-val="+5"></div>
+                  </div>
+                  <div class="vu-needle" id="needle-r"></div>
+                  <div class="vu-ch-label">RIGHT</div>
+              </div>
+          </div>
+          <div id="led-section">
+              <div class="led-row"><div class="led-label">L</div><div class="led-track" id="led-track-l"></div></div>
+              <div class="led-row"><div class="led-label">R</div><div class="led-track" id="led-track-r"></div></div>
+          </div>
+      </div>
+
+      <div id="playlist-panel">
+          <div style="text-align:center; padding:20px; opacity:0.6; font-size:12px; color:#fff;">NO TRACKS LOADED</div>
+      </div>
+
+      <div id="controls-container">
+        <button id="artToggleBtn">ALBUM ART</button>
+        
+        <div class="knobs-row">
+            <div class="knob-wrapper">
+                <div class="knob-dial"><div class="dial-val dv-min">MIN</div><div class="dial-val dv-max">MAX</div></div>
+                <div class="metal-knob" id="knob-vol"></div>
+                <div class="knob-label">VOLUME</div>
+            </div>
+            <div class="knob-wrapper">
+                <div class="knob-dial"><div class="dial-val dv-min">-</div><div class="dial-val dv-max">+</div></div>
+                <div class="metal-knob" id="knob-bass"></div>
+                <div class="knob-label">BASS</div>
+            </div>
+            <div class="knob-wrapper">
+                <div class="knob-dial"><div class="dial-val dv-min">-</div><div class="dial-val dv-max">+</div></div>
+                <div class="metal-knob" id="knob-treble"></div>
+                <div class="knob-label">TREBLE</div>
+            </div>
+        </div>
+        
+        <div id="rpm-group">
+            <button class="rpm-btn active" id="btn33">33</button>
+            <button class="rpm-btn" id="btn45">45</button>
+            <button class="rpm-btn" id="btn78">78</button>
+        </div>
+
+        <div id="startStopBtn"><div class="rect-led" id="startLed"></div><span style="margin-top: 10px;">START / STOP</span></div>
+
+        <div id="io-group">
+            <button class="round-btn" id="localBtn"><div class="eject-icon">⏏</div>EJECT</button>
+            <button class="round-btn" id="streamBtn"><svg viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>STREAM</button>
+        </div>
+
+        <div id="powerBtn"><div id="power-icon">⏻</div></div>
+        
+        <div id="transport-deck">
+            <button class="cue-btn" id="btnPrev"><div class="rect-led"></div>|&lt;</button>
+            <button class="cue-btn" id="btnRW"><div class="rect-led"></div>&lt;&lt;</button>
+            <button class="cue-btn" id="btnFF"><div class="rect-led"></div>&gt;&gt;</button>
+            <button class="cue-btn" id="btnNext"><div class="rect-led"></div>&gt;|</button>
+        </div>
+        
+        <div class="technics-logo">Technics SL-1300G</div>
+      </div>
+
+  </div>
+
+  <div id="main-stage-wrapper">
+      <div id="center-stage">
+          <div id="wood-base">
+              <div class="foot" id="foot-left"></div>
+              <div class="foot" id="foot-right"></div>
+              
+              <div id="plinth">
+                  <div id="strobe-tower"><div id="strobe-light"></div></div>
+                  <div id="platter">
+                      <div id="strobe-dots"></div>
+                      <div id="strobe-dots-active"></div>
+                      <div id="record-container">
+                        <div id="record">
+                          <div id="label">
+                              <div id="yt-container"><div id="ytPlayer"></div></div>
+                              <img id="label-img" src="" alt="">
+                              <div id="spindle"></div>
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+                  <div id="arm-assembly">
+                    <div id="arm-base"></div>
+                    <div id="arm-rotate">
+                        <div id="arm-stick"><div id="headshell"></div></div>
+                    </div>
+                  </div>
+                  <div id="pitch-container">
+                      <div id="pitch-slot"><div id="pitch-knob"></div></div>
+                      <div class="pitch-text">PITCH</div>
+                  </div>
+                  <div id="album-art-modal">
+                      <img id="modal-img" src="" alt="Album Art">
+                      <div class="modal-controls">
+                          <button class="art-nav-btn" id="prevArtBtn">« PREV</button>
+                          <span style="color:#fff; font-size:10px; font-weight:bold;">COVER ART</span>
+                          <button class="art-nav-btn" id="nextArtBtn">NEXT »</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="credit-footer">Dedicated to all Audiophiles. Designed & Developed by Chittaranjan Panda (babuptx [at] gmail)</div>
+      </div>
+  </div>
+  
+  <div id="urlModal">
+      <div id="modalContent">
+          <h3 style="color:var(--led-cyan); margin:0;">Load YouTube Stream</h3>
+          <input type="text" id="urlInput" placeholder="Paste YouTube URL here...">
+          <button id="loadUrlBtn">LOAD STREAM</button>
+          <button id="cancelBtn">CANCEL</button>
+      </div>
+  </div>
+
+  <script>
+    let mode = 'LOCAL';
+    let audioFiles = []; let trackNames = []; let imageFiles = []; 
+    let currentTrackIndex = 0; let currentImgIndex = 0;
+    let motorOn = false; let isDragging = false; let armAngle = 0; 
+    let currentAlbumTitle = "UNKNOWN ALBUM";
+    let ytPlayer = null; let ytDuration = 0; let ytTimer = null;
+    let currentRPM = 33; let currentPitch = 0; let artInterval = null;
+    let analyzerInterval = null;
+
+    let audioCtx, source, gainNode, bassNode, trebleNode, analyser, dataArray;
+    let isAudioInit = false;
+
+    const REST_ANGLE = 0; const START_GROOVE = 22; const END_GROOVE = 48; const PLAYABLE_ARC = END_GROOVE - START_GROOVE;
+    const defaultAlbumArt = "https://via.placeholder.com/300?text=No+Art";
+    
+    // UPDATED VINYL COLORS
+    const vinylColors = [
+        "repeating-radial-gradient(#111, #111 1px, #222 2px)", // Black
+        "repeating-radial-gradient(#400, #400 1px, #600 2px)", // Burgundy
+        "repeating-radial-gradient(#001f3f, #001f3f 1px, #003366 2px)" // Dark Blue
+    ];
+    
+    const playlistBackgrounds = ["#0f172a", "#1a0b0b", "#0b1a11", "#181818", "#1e1b2e"];
+
+    const audio = document.getElementById('audio');
+    const record = document.getElementById('record');
+    const strobeDots = document.getElementById('strobe-dots');
+    const strobeDotsRed = document.getElementById('strobe-dots-active'); 
+    const strobeLight = document.getElementById('strobe-light');
+    const labelImg = document.getElementById('label-img');
+    const modalImg = document.getElementById('modal-img');
+    const armRotate = document.getElementById('arm-rotate');
+    const folderInput = document.getElementById('folderInput');
+    const playlistPanel = document.getElementById('playlist-panel');
+    const artToggleBtn = document.getElementById('artToggleBtn');
+    const albumArtModal = document.getElementById('album-art-modal');
+    const mechCounter = document.getElementById('mech-counter');
+    const timeHud = document.getElementById('time-hud');
+    const powerBtn = document.getElementById('powerBtn');
+    const startStopBtn = document.getElementById('startStopBtn');
+    const startLed = document.getElementById('startLed');
+    const ytContainer = document.getElementById('yt-container');
+    const urlModal = document.getElementById('urlModal');
+    const urlInput = document.getElementById('urlInput');
+    const btn33 = document.getElementById('btn33');
+    const btn45 = document.getElementById('btn45');
+    const btn78 = document.getElementById('btn78');
+    const pitchKnob = document.getElementById('pitch-knob');
+    const localBtn = document.getElementById('localBtn');
+    const streamBtn = document.getElementById('streamBtn');
+
+    // SETUP SPECTRUM (65 LEDs)
+    const specRow1 = document.getElementById('led-track-l');
+    const specRow2 = document.getElementById('led-track-r');
+    for(let i=0; i<65; i++) {
+        let led1 = document.createElement('div'); led1.className = 'led-seg';
+        let led2 = document.createElement('div'); led2.className = 'led-seg';
+        specRow1.appendChild(led1);
+        specRow2.appendChild(led2);
+    }
+
+    function initAudio() {
+        if(isAudioInit) return;
+        const C = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new C();
+        source = audioCtx.createMediaElementSource(audio);
+        bassNode = audioCtx.createBiquadFilter(); bassNode.type = 'lowshelf'; bassNode.frequency.value = 200; bassNode.gain.value = 0;
+        trebleNode = audioCtx.createBiquadFilter(); trebleNode.type = 'highshelf'; trebleNode.frequency.value = 3000; trebleNode.gain.value = 0;
+        gainNode = audioCtx.createGain(); gainNode.gain.value = 1.0;
+        analyser = audioCtx.createAnalyser(); analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        source.connect(bassNode); bassNode.connect(trebleNode); trebleNode.connect(gainNode); gainNode.connect(analyser); gainNode.connect(audioCtx.destination);
+        isAudioInit = true;
+    }
+
+    function updateMeters() {
+        if(!motorOn || !isAudioInit) { clearMeters(); return; }
+        analyser.getByteFrequencyData(dataArray);
+        
+        let sum = 0; for(let i=0; i<dataArray.length; i++) sum += dataArray[i];
+        let average = sum / dataArray.length;
+        
+        // VU Needles
+        let deg = Math.min(45, (average / 200) * 90 - 45); 
+        document.getElementById('needle-l').style.transform = `translateX(-50%) rotate(${deg}deg)`;
+        document.getElementById('needle-r').style.transform = `translateX(-50%) rotate(${deg}deg)`;
+        
+        // Backlight Pulse
+        let opacity = 0.2 + (average / 255) * 0.8;
+        document.querySelectorAll('.vu-backlight').forEach(b => b.style.opacity = opacity);
+        
+        // LED Bars
+        let fillAmt = Math.floor((average / 255) * 65);
+        let segsL = specRow1.children;
+        let segsR = specRow2.children;
+        for(let i=0; i<65; i++) {
+            if(i < fillAmt) {
+                let cls = (i < 8) ? 'lit-cyan' : 'lit-red';
+                segsL[i].className = 'led-seg ' + cls;
+                segsR[i].className = 'led-seg ' + cls;
+            } else {
+                segsL[i].className = 'led-seg';
+                segsR[i].className = 'led-seg';
+            }
+        }
+    }
+    
+    function clearMeters() {
+        let c1 = specRow1.children; let c2 = specRow2.children;
+        for(let i=0; i<65; i++) { c1[i].className = 'led-seg'; c2[i].className = 'led-seg'; }
+        document.getElementById('needle-l').style.transform = `translateX(-50%) rotate(-45deg)`;
+        document.getElementById('needle-r').style.transform = `translateX(-50%) rotate(-45deg)`;
+    }
+
+    // KNOB SETUP
+    let volume = 1.0; let bassVal = 0; let trebleVal = 0;
+
+    function setupKnob(element, type) {
+        let isDragging = false; let startY = 0;
+        
+        element.addEventListener('mousedown', (e) => { 
+            if(!document.body.classList.contains('powered-on')) return;
+            isDragging = true; startY = e.clientY; 
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if(!isDragging) return;
+            e.preventDefault();
+            let delta = startY - e.clientY;
+            
+            // Logic depending on type
+            if(type === 'vol') {
+                let currentRot = (volume * 270) - 135;
+                let newRot = currentRot + delta;
+                if(newRot > 135) newRot = 135; if(newRot < -135) newRot = -135;
+                volume = (newRot + 135) / 270;
+                // TRANSFORM UPDATE: Include translateX(-50%) to keep centered
+                element.style.transform = `translateX(-50%) rotate(${newRot}deg)`;
+                
+                audio.volume = volume;
+                if(ytPlayer && ytPlayer.setVolume) ytPlayer.setVolume(volume * 100);
+                if(gainNode) gainNode.gain.value = volume;
+            } 
+            else if(type === 'bass' || type === 'treble') {
+                let currentVal = (type === 'bass') ? bassVal : trebleVal;
+                let currentRot = currentVal * 13.5; 
+                let newRot = currentRot + delta;
+                if(newRot > 135) newRot = 135; if(newRot < -135) newRot = -135;
+                let newVal = newRot / 13.5;
+                
+                // TRANSFORM UPDATE: Include translateX(-50%)
+                element.style.transform = `translateX(-50%) rotate(${newRot}deg)`;
+                
+                if(type === 'bass') { 
+                    bassVal = newVal; 
+                    if(bassNode) bassNode.gain.value = bassVal; 
+                } else { 
+                    trebleVal = newVal; 
+                    if(trebleNode) trebleNode.gain.value = trebleVal; 
+                }
+            }
+            startY = e.clientY;
+        });
+        
+        window.addEventListener('mouseup', () => { isDragging = false; });
+    }
+
+    // Initialize Knobs
+    setupKnob(document.getElementById('knob-vol'), 'vol');
+    document.getElementById('knob-vol').style.transform = `translateX(-50%) rotate(135deg)`;
+
+    setupKnob(document.getElementById('knob-bass'), 'bass');
+    setupKnob(document.getElementById('knob-treble'), 'treble');
+
+
+    let pitchContainer = document.getElementById('pitch-container');
+    let pitchDragging = false;
+    pitchContainer.addEventListener('mousedown', (e) => { if(document.body.classList.contains('powered-on')) pitchDragging = true; });
+    window.addEventListener('mousemove', (e) => {
+        if(pitchDragging) {
+            let rect = pitchContainer.getBoundingClientRect();
+            let y = e.clientY - rect.top - 20; 
+            if(y < 0) y = 0; if(y > 210) y = 210;
+            pitchKnob.style.top = y + "px";
+            let ledColor = 'var(--led-cyan)';
+            if(y > 115) ledColor = '#ff0000'; else if(y < 95) ledColor = '#39ff14';
+            pitchKnob.style.setProperty('--pitch-led', ledColor);
+            currentPitch = ((y / 210) * 16) - 8;
+            applySpeed();
+        }
+    });
+    window.addEventListener('mouseup', () => pitchDragging = false);
+
+    function loadYouTubeAPI() { var tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(tag, s); }
+    window.onYouTubeIframeAPIReady = function() {
+        ytPlayer = new YT.Player('ytPlayer', { height: '100%', width: '100%', playerVars: { 'controls': 0, 'disablekb': 1, 'playsinline': 1 }, events: { 'onStateChange': onPlayerStateChange, 'onReady': onPlayerReady } });
+    };
+    function onPlayerReady(e) { e.target.setVolume(100); e.target.unMute(); }
+    function onPlayerStateChange(e) { if (e.data == YT.PlayerState.PLAYING) { ytDuration = ytPlayer.getDuration(); startYTTimer(); } else { stopYTTimer(); } if (e.data == YT.PlayerState.ENDED) { stopMotor(); } }
+    function startYTTimer() { stopYTTimer(); ytTimer = setInterval(() => { if(ytPlayer && ytPlayer.getCurrentTime) { let cur = ytPlayer.getCurrentTime(); updateHUD(cur, ytDuration); updateArmFromTime(cur, ytDuration); } }, 500); }
+    function stopYTTimer() { if(ytTimer) clearInterval(ytTimer); }
+    loadYouTubeAPI();
+
+    function flashTransport(btnId) { let btn = document.getElementById(btnId).querySelector('.rect-led'); btn.classList.add('lit'); setTimeout(() => btn.classList.remove('lit'), 200); }
+    document.getElementById('btnPrev').onclick = () => { if(motorOn) { flashTransport('btnPrev'); if(mode==='LOCAL') loadTrackLocal(Math.max(0, currentTrackIndex-1), true); } };
+    document.getElementById('btnNext').onclick = () => { if(motorOn) { flashTransport('btnNext'); if(mode==='LOCAL') loadTrackLocal(Math.min(audioFiles.length-1, currentTrackIndex+1), true); } };
+    document.getElementById('btnRW').onclick = () => { if(motorOn) { flashTransport('btnRW'); if(mode==='LOCAL') audio.currentTime = Math.max(0, audio.currentTime - 10); else if(ytPlayer) ytPlayer.seekTo(ytPlayer.getCurrentTime() - 10, true); } };
+    document.getElementById('btnFF').onclick = () => { if(motorOn) { flashTransport('btnFF'); if(mode==='LOCAL') audio.currentTime = Math.min(audio.duration, audio.currentTime + 10); else if(ytPlayer) ytPlayer.seekTo(ytPlayer.getCurrentTime() + 10, true); } };
+
+    document.getElementById('localBtn').onclick = () => { 
+        if(mode === 'YOUTUBE' && ytPlayer && ytPlayer.stopVideo) {
+            ytPlayer.stopVideo();
+        }
+        mode='LOCAL'; 
+        folderInput.click(); 
+        localBtn.classList.add('active'); streamBtn.classList.remove('active'); 
+    };
+
+    document.getElementById('streamBtn').onclick = () => { 
+        audio.pause();
+        audio.currentTime = 0;
+        mode='YOUTUBE'; 
+        urlModal.style.display='flex'; urlInput.focus(); 
+        streamBtn.classList.add('active'); localBtn.classList.remove('active'); 
+    };
+
+    document.getElementById('cancelBtn').onclick = () => { urlModal.style.display='none'; };
+    
+    document.getElementById('loadUrlBtn').onclick = () => {
+        let val = urlInput.value; 
+        let id = val.split('v=')[1] || val.split('/').pop(); 
+        let amp = id.indexOf('&'); if(amp != -1) id = id.substring(0, amp);
+        
+        if(id) { 
+            stopMotor(); 
+            urlModal.style.display='none'; 
+            labelImg.style.display='none'; 
+            ytContainer.classList.add('active'); 
+            
+            if(ytPlayer && ytPlayer.loadVideoById) {
+                ytPlayer.loadVideoById(id); 
+                ytPlayer.pauseVideo(); 
+            }
+            
+            playlistPanel.innerHTML = '<div style="color:white; text-align:center; padding:20px;">STREAMING YOUTUBE...</div>'; 
+            currentAlbumTitle = "YOUTUBE STREAM"; 
+            armAngle = START_GROOVE; 
+            updateArmVisual(); 
+        }
+    };
+
+    artToggleBtn.addEventListener('click', () => { albumArtModal.classList.toggle('active'); });
+    document.getElementById('nextArtBtn').addEventListener('click', () => { if(imageFiles.length > 0) { currentImgIndex = (currentImgIndex + 1) % imageFiles.length; modalImg.src = imageFiles[currentImgIndex]; } });
+    document.getElementById('prevArtBtn').addEventListener('click', () => { if(imageFiles.length > 0) { currentImgIndex = (currentImgIndex - 1 + imageFiles.length) % imageFiles.length; modalImg.src = imageFiles[currentImgIndex]; } });
+
+    folderInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files); if (files.length === 0) return; stopMotor(); ytContainer.classList.remove('active'); labelImg.style.display='block';
+        const audioExts = ['.mp3', '.flac', '.wav', '.ogg', '.m4a']; const imgExts = ['.jpg', '.jpeg', '.png', '.gif'];
+        let foundAudio = []; let foundImages = [];
+        if(files[0].webkitRelativePath) currentAlbumTitle = files[0].webkitRelativePath.split('/')[0].toUpperCase();
+        files.forEach(f => { if(f.name.startsWith('.')) return; if (audioExts.some(ext => f.name.toLowerCase().endsWith(ext))) foundAudio.push(f); if (imgExts.some(ext => f.name.toLowerCase().endsWith(ext))) foundImages.push(f); });
+        if (foundAudio.length === 0) { alert("No music found!"); return; }
+        foundAudio.sort((a, b) => a.name.localeCompare(b.name)); foundImages.sort((a, b) => a.name.localeCompare(b.name));
+        audioFiles = foundAudio.map(f => URL.createObjectURL(f)); trackNames = foundAudio.map(f => f.name.substring(0, f.name.lastIndexOf('.')));
+        imageFiles = foundImages.map(f => URL.createObjectURL(f)); if (imageFiles.length === 0) imageFiles = [defaultAlbumArt];
+        currentImgIndex = 0; labelImg.src = imageFiles[0]; modalImg.src = imageFiles[0];
+        
+        // V3.97: Random Vinyl Color
+        const rndColor = vinylColors[Math.floor(Math.random() * vinylColors.length)]; 
+        record.style.background = rndColor;
+        
+        const rndBg = playlistBackgrounds[Math.floor(Math.random() * playlistBackgrounds.length)]; playlistPanel.style.backgroundColor = rndBg;
+        await buildPlaylistUI(foundAudio); loadTrackLocal(0, false); armAngle = REST_ANGLE; updateArmVisual();
+    });
+
+    function startArtShuffle() { if(imageFiles.length > 1) { if(artInterval) clearInterval(artInterval); artInterval = setInterval(() => { currentImgIndex = (currentImgIndex + 1) % imageFiles.length; labelImg.style.opacity = 0; setTimeout(() => { labelImg.src = imageFiles[currentImgIndex]; labelImg.style.opacity = 1; }, 500); }, 5000); } }
+    function stopArtShuffle() { if(artInterval) clearInterval(artInterval); }
+
+    async function buildPlaylistUI(fileList) {
+        playlistPanel.innerHTML = `<div class="album-header">${currentAlbumTitle}</div>`;
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i]; const name = file.name.substring(0, file.name.lastIndexOf('.'));
+            let div = document.createElement("div"); div.className = "track-item"; div.id = `track-${i}`;
+            let ser = (i + 1).toString().padStart(2, '0');
+            div.innerHTML = `<span class="track-num">${ser}</span><span class="track-dur" id="dur-${i}">--:--</span><span>${name}</span>`;
+            div.onclick = () => { loadTrackLocal(i, true); audio.currentTime = 0; let sliceSize = PLAYABLE_ARC / audioFiles.length; armAngle = START_GROOVE + (i * sliceSize) + 0.1; updateArmVisual(); if(motorOn) audio.play(); };
+            playlistPanel.appendChild(div);
+            getDuration(file).then(dur => { document.getElementById(`dur-${i}`).innerText = dur; });
+        }
+        drawGrooves(fileList.length + 5); 
+    }
+    
+    function getDuration(file) { return new Promise((resolve) => { const objectUrl = URL.createObjectURL(file); const tempAudio = new Audio(objectUrl); tempAudio.addEventListener('loadedmetadata', () => { const d = tempAudio.duration; const m = Math.floor(d/60); const s = Math.floor(d%60); URL.revokeObjectURL(objectUrl); resolve(`${m}:${s.toString().padStart(2,'0')}`); }); tempAudio.addEventListener('error', () => resolve("?:?")); }); }
+
+    function highlightTrack(index) { let items = document.querySelectorAll('.track-item'); items.forEach(item => item.classList.remove('active')); let target = document.getElementById(`track-${index}`); if(target) { target.classList.add('active'); target.scrollIntoView({ behavior: "smooth", block: "center" }); } }
+    
+    function loadTrackLocal(index, autoPlayIfMotorOn) { 
+        if (index < 0 || index >= audioFiles.length) return; 
+        currentTrackIndex = index; 
+        audio.src = audioFiles[index]; 
+        highlightTrack(index);
+        if(autoPlayIfMotorOn && motorOn) audio.play();
+    }
+
+    powerBtn.addEventListener('click', () => { document.body.classList.toggle('powered-on'); if (!document.body.classList.contains('powered-on')) { stopMotor(); } else { initAudio(); if(audioCtx.state==='suspended') audioCtx.resume(); } });
+    startStopBtn.addEventListener('click', () => { if (!document.body.classList.contains('powered-on')) return; motorOn = !motorOn; if (motorOn) { startLed.classList.add('lit'); startVisuals(); if(mode==='LOCAL') audio.play().catch(e=>console.log(e)); if(mode==='YOUTUBE' && ytPlayer) ytPlayer.playVideo(); } else { stopMotor(); } });
+
+    function startVisuals() { strobeLight.classList.add('on'); strobeDotsRed.classList.add('on'); record.classList.add('spinning'); strobeDots.style.animationPlayState = 'running'; strobeDotsRed.style.animationPlayState = 'running'; record.style.animationPlayState='running'; applySpeed(); if(mode === 'LOCAL') startArtShuffle(); if(analyzerInterval) clearInterval(analyzerInterval); analyzerInterval = setInterval(updateMeters, 50); }
+    
+    function stopMotor() { 
+        motorOn = false; 
+        startLed.classList.remove('lit'); strobeLight.classList.remove('on'); strobeDotsRed.classList.remove('on'); 
+        record.style.animationPlayState='paused'; strobeDots.style.animationPlayState = 'paused'; strobeDotsRed.style.animationPlayState = 'paused'; strobeDots.className = ''; strobeDotsRed.className = ''; 
+        
+        audio.pause(); 
+        if(ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo(); 
+        
+        stopArtShuffle(); clearInterval(analyzerInterval); clearMeters(); 
+    }
+
+    function applySpeed() {
+        let base = 1.8; if(currentRPM === 45) base = 1.33; if(currentRPM === 78) base = 0.76;
+        let pitchFactor = 1.0 + (currentPitch / 100); 
+        let finalDuration = base / pitchFactor;
+        record.style.animationDuration = finalDuration + 's'; strobeDots.style.animationDuration = finalDuration + 's'; strobeDotsRed.style.animationDuration = finalDuration + 's';
+        audio.playbackRate = pitchFactor * (currentRPM === 33 ? 1 : currentRPM===45 ? 1.35 : 2.35); 
+        if(ytPlayer) ytPlayer.setPlaybackRate(Math.min(Math.max(audio.playbackRate, 0.25), 2.0));
+        strobeDots.className = ''; strobeDotsRed.className = ''; 
+        if(motorOn) { if(currentRPM === 33 || currentRPM === 78) { strobeDots.classList.add('strobe-acw'); strobeDotsRed.classList.add('strobe-acw'); } if(currentRPM === 45) { strobeDots.classList.add('strobe-cw'); strobeDotsRed.classList.add('strobe-cw'); } }
+    }
+
+    function setRPM(rpm) { currentRPM = rpm; btn33.classList.remove('active'); btn45.classList.remove('active'); btn78.classList.remove('active'); document.getElementById(`btn${rpm}`).classList.add('active'); applySpeed(); }
+    btn33.onclick = () => setRPM(33); btn45.onclick = () => setRPM(45); btn78.onclick = () => setRPM(78);
+
+    const armStick = document.getElementById('arm-stick');
+    armStick.addEventListener('mousedown', () => { isDragging = true; armRotate.style.transition = 'none'; });
+    document.addEventListener('mouseup', () => { if(isDragging) { isDragging = false; armRotate.style.transition = 'transform 0.2s ease-out'; if (armAngle >= START_GROOVE && armAngle <= END_GROOVE) handleNeedleDrop(); else if (armAngle < -5) { armAngle = REST_ANGLE; updateArmVisual(); } } });
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return; e.preventDefault(); const armBox = document.getElementById('arm-assembly').getBoundingClientRect();
+        const pivotX = armBox.left + 70; const pivotY = armBox.top + 70;
+        let angle = (Math.atan2(e.clientY - pivotY, e.clientX - pivotX) * 180 / Math.PI) - 90;
+        if (angle < -10) angle = -10; if (angle > 60) angle = 60; armAngle = angle; updateArmVisual();
+    });
+    function updateArmVisual() { armRotate.style.transform = `rotate(${armAngle}deg)`; }
+    function handleNeedleDrop() { if(mode==='LOCAL' && audioFiles.length === 0) return; let percent = (armAngle - START_GROOVE) / PLAYABLE_ARC; if (mode === 'LOCAL') { let trackCount = audioFiles.length; let rawIndex = Math.floor(percent * trackCount); if (rawIndex >= trackCount) rawIndex = trackCount - 1; if (rawIndex < 0) rawIndex = 0; let sliceSize = 1.0 / trackCount; let sliceStart = rawIndex * sliceSize; let progressInSlice = (percent - sliceStart) / sliceSize; if (rawIndex !== currentTrackIndex) { loadTrackLocal(rawIndex); audio.currentTime = 0; if(motorOn) audio.play(); } else if (!isNaN(audio.duration)) { audio.currentTime = progressInSlice * audio.duration; if(motorOn) audio.play(); } } else if (mode === 'YOUTUBE' && ytPlayer) { if (percent < 0) percent = 0; if (percent > 1) percent = 1; let seekTo = percent * ytDuration; ytPlayer.seekTo(seekTo, true); if(motorOn) ytPlayer.playVideo(); } }
+    function updateHUD(cur, total) { let cnt = Math.floor(cur * 15); mechCounter.innerText = cnt.toString().padStart(5, '0'); let timeStr = `${formatTime(cur)} | ${formatTime(total - cur)}`; timeHud.innerText = timeStr; }
+    function updateArmFromTime(cur, total) { if(isDragging || total === 0) return; let percentGlobal = cur / total; if (mode === 'LOCAL') { let sliceSize = PLAYABLE_ARC / audioFiles.length; armAngle = START_GROOVE + (currentTrackIndex * sliceSize) + (percentGlobal * sliceSize); } else { armAngle = START_GROOVE + (percentGlobal * PLAYABLE_ARC); } updateArmVisual(); }
+    audio.addEventListener('timeupdate', () => { if (!isNaN(audio.duration)) { updateHUD(audio.currentTime, audio.duration); updateArmFromTime(audio.currentTime, audio.duration); } });
+    audio.addEventListener('ended', () => { if (currentTrackIndex < audioFiles.length - 1) { loadTrackLocal(currentTrackIndex + 1); if(motorOn) audio.play(); } else { stopMotor(); } });
+    function formatTime(s) { if(isNaN(s)) return "00:00"; let m = Math.floor(s/60); let sec = Math.floor(s%60); return (m<10?"0"+m:m) + ":" + (sec<10?"0"+sec:sec); }
+    function drawGrooves(cnt) { 
+        let old = record.querySelectorAll('.groove-line'); old.forEach(o => o.remove());
+        let step = PLAYABLE_ARC / cnt; 
+        for (let i = 1; i < cnt; i++) { 
+            let groove = document.createElement('div'); groove.className = 'groove-line'; 
+            let rp = 100 - (((step*i)/PLAYABLE_ARC) * (100 - 35)); 
+            groove.style.width = rp + '%'; groove.style.height = rp + '%'; 
+            record.appendChild(groove); 
+        } 
+    }
+  </script>
+</body>
+</html>
