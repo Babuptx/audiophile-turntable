@@ -1,59 +1,48 @@
-# 🎵 Hybrid Audiophile Turntable
+# Audiophile Turntable - Technics SL-1300G Simulator (V3.98)
 
-A high-fidelity, browser-based vinyl turntable simulator that bridges the gap between local audio collections and cloud streaming.
+A high-fidelity, hybrid HTML5 vinyl player that simulates the tactile experience of a high-end Technics turntable directly in your browser. This project bridges the gap between digital convenience and analog nostalgia, allowing you to play local high-res audio files or stream directly from YouTube with a realistic interface.
 
-**Live Demo:** [https://audiophile-turntable.netlify.app](https://audiophile-turntable.netlify.app)
+## 🎛 Features
 
-![Version](https://img.shields.io/badge/version-60.0-red) ![Status](https://img.shields.io/badge/build-passing-brightgreen)
+### 🎧 Hybrid Playback Engine
+* **Local Playback:** Supports drag-and-drop or folder selection for MP3, FLAC, WAV, and OGG files.
+* **YouTube Streaming:** Integrated YouTube IFrame API allows you to "spin" YouTube videos as if they were vinyl records.
 
-## 🌟 Overview
-This project is a **client-side web application** that simulates the tactile experience of a high-end Technics turntable. It features a unique "Hybrid Engine" that allows users to seamlessly switch between playing local high-quality audio files and streaming music directly from YouTube, all within a unified, skinnable interface.
+### 🎚 Realistic Physics & UI
+* **Accurate Mechanics:** Features a functioning Strobe Tower light, variable pitch slider, and 33/45/78 RPM speed switching with accurate platter physics.
+* **Interactive Tonearm:** Drag-and-drop the needle onto the record grooves to seek through tracks (calculates track position based on time).
+* **Visualizers:**
+    * **Dual Analog VU Meters:** Real-time left/right channel monitoring.
+    * **LED Spectrum Analyzer:** 65-band frequency visualization.
+* **EQ Control:** Functional Bass and Treble knobs powered by the Web Audio API.
 
-## ✨ Key Features
+### 🎨 Design
+* **Aesthetics:** Technics SL-1300G Aluminum styling with a wood base finish.
+* **Dynamic Lighting:** LED indicators for Start/Stop, RPM selection, and Power.
+* **Album Art:** Automatic album art rotation and "Cover Art" modal view.
 
-### 🎛️ Hyper-Realistic Interface
-* **Physics-Based Tonearm:** Manual drag-and-drop needle drops, synchronized with track time.
-* **Strobe Light & Platter Physics:** Accurate 33/45 RPM animations with authentic strobe calibration patterns.
-* **Studio-Grade Controls:** * Professional Volume Fader with dynamic percentage readout.
-    * Digital Transport Deck with Cue (<< >>) and Time Display.
-    * Start/Stop motor inertia logic.
-
-### 🚀 Hybrid Audio Engine
-* **Local Playback:** Drag-and-drop support for local folders (MP3, FLAC, WAV).
-* **YouTube Integration:** Embeds the YouTube API *inside* the record label, allowing for "Picture Disc" video playback that spins with the music.
-* **Digital Playlist:** Auto-generated interactive playlist for local files with active track highlighting.
-
-### 🎨 Customization
-* **Hot-Swappable Skins:** Instantly toggle between:
-    * **Technics Gold:** Classic brushed metal aesthetic.
-    * **Walnut Wood:** Audiophile vintage hi-fi look.
-    * **Arctic Marble:** Modern minimalist design.
-* **High-Contrast UI:** Smart text coloring that adapts to the chosen skin for maximum readability.
-
-## 🛠️ Tech Stack
-* **Core:** HTML5, CSS3 (Advanced Animations & Variables), Vanilla JavaScript (ES6+).
-* **Audio:** HTML5 Audio Context & YouTube IFrame Player API.
-* **Architecture:** Serverless / Static Site.
-* **Deployment:** CI/CD Pipeline via GitHub -> Netlify.
-
-## 🚀 Local Installation
+## 🚀 How to Run
 1.  Clone the repository:
     ```bash
     git clone [https://github.com/Babuptx/audiophile-turntable.git](https://github.com/Babuptx/audiophile-turntable.git)
     ```
-2.  Navigate to the directory:
-    ```bash
-    cd audiophile-turntable
-    ```
-3.  Start a local server (Required for YouTube API security):
-    ```bash
-    python -m http.server
-    ```
-4.  Open `http://localhost:8000` in your browser.
+2.  Navigate to the folder and open `index.html` in any modern web browser (Chrome/Edge/Brave recommended for Web Audio API support).
 
-## 🤝 Credits
-* Concept inspired by "Needledrop" by Thomas Park.
-* Developed by **Babu Ptx**.
+## 🕹 Controls
+* **Power:** Click the large Power button to initialize the audio engine.
+* **Start/Stop:** Spools up the motor and strobe light.
+* **Eject Button (Local):** Opens file picker to load a folder of music.
+* **Stream Button (YouTube):** Opens a modal to paste a YouTube URL.
+* **Knobs:** Click and drag up/down on Volume, Bass, or Treble to adjust.
 
----
-*v60.0 - Gold Master Release*
+## 🛠 Technologies Used
+* **Core:** HTML5, CSS3 (Variables, Gradients, Keyframe Animations), Vanilla JavaScript.
+* **Audio:** Web Audio API (for EQ and Visualizers).
+* **Streaming:** YouTube IFrame API.
+
+## 👨‍💻 Credits
+* **Design & Development:** Chittaranjan Panda
+* *Dedicated to all Audiophiles.*
+
+## 📄 License
+This project is open-source and available under the MIT License.
