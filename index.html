@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Technics SL-1300G Aluminum - V3.98</title>
   <style>
     :root { 
@@ -27,37 +28,40 @@
         --meter-amber-glow: radial-gradient(circle at 50% 100%, rgba(255, 160, 40, 0.4) 0%, rgba(255, 100, 0, 0.1) 60%, transparent 100%);
     }
 
-    body { 
-        background-color: var(--bg-color); 
+    body {
+        background-color: var(--bg-color);
         background-image: var(--bg-gradient);
-        font-family: 'Arial', sans-serif; margin: 0; height: 100vh; width: 100vw; overflow: hidden; 
-        user-select: none; 
-        display: flex; flex-direction: row; 
+        font-family: 'Arial', sans-serif; margin: 0; min-height: 100vh; width: 100vw; overflow: hidden;
+        user-select: none;
+        display: flex; flex-direction: row;
     }
 
     /* --- LEFT SIDEBAR CONSOLE --- */
     #left-console {
-        width: 500px;
+        width: clamp(320px, 28vw, 500px);
+        flex-shrink: 0;
         height: 100vh;
         background: rgba(0,0,0,0.3);
         border-right: 1px solid #333;
         display: flex; flex-direction: column;
         align-items: center;
-        padding: 20px;
-        gap: 20px;
+        padding: 15px;
+        gap: 15px;
         overflow-y: auto;
         box-sizing: border-box;
         z-index: 100;
         backdrop-filter: blur(5px);
     }
-    
+
     /* RIGHT STAGE */
     #main-stage-wrapper {
         flex-grow: 1;
+        min-width: 0;
         height: 100vh;
         display: flex; justify-content: center; align-items: center;
         position: relative;
-        padding-left: 50px;
+        padding-left: 20px;
+        overflow: hidden;
     }
 
     /* --- HUD --- */
@@ -287,14 +291,75 @@
     #wood-base { position: relative; padding: 30px; background: var(--wood-texture); border-radius: 10px; box-shadow: 0 30px 60px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; }
     #plinth { position: relative; width: 90vmin; height: 66vmin; border-radius: 6px; background-color: #dcdcdc; background-image: var(--aluminum-grain), var(--aluminum-base); border: 1px solid rgba(255,255,255,0.4); box-shadow: inset 1px 1px 2px rgba(255,255,255,0.9), inset -1px -1px 2px rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; }
 
-    /* STROBE TOWER */
-    #strobe-tower { 
-        position: absolute; bottom: 30px; left: 14%; width: 60px; height: 80px; background: linear-gradient(90deg, #999 0%, #fff 40%, #ccc 60%, #888 100%); border-radius: 5px 5px 0 0; box-shadow: 5px 5px 15px rgba(0,0,0,0.5), inset 0 1px 0 #fff; z-index: 50; display: flex; justify-content: center; padding-top: 15px; border: 1px solid #aaa; border-bottom: none; 
+    /* STROBE TOWER — sits at left edge of platter, LED faces right toward rim */
+    #strobe-tower {
+        position: absolute;
+        left: 14%;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px; height: 65px;
+        background: linear-gradient(90deg, #888 0%, #ccc 30%, #ddd 50%, #bbb 70%, #888 100%);
+        border-radius: 4px;
+        box-shadow: 3px 3px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.6);
+        z-index: 51;
+        display: flex; justify-content: flex-end; align-items: center;
+        border: 1px solid #999;
     }
-    #strobe-tower::before { content: ''; position: absolute; top: 0; width: 100%; height: 25px; background: linear-gradient(to bottom, rgba(255,255,255,0.8), transparent); border-radius: 5px 5px 0 0; pointer-events: none; }
-    #strobe-light { width: 18px; height: 18px; background-color: #500; border-radius: 50%; box-shadow: inset 0 0 5px #000; transition: all 0.1s; border: 1px solid #333; }
-    #strobe-light.on { background-color: #f00; box-shadow: 0 0 20px #f00, 0 0 40px #f00; border-color: #f55; }
-    
+    /* Metallic highlight on top */
+    #strobe-tower::before {
+        content: ''; position: absolute; top: 0; left: 0;
+        width: 100%; height: 40%;
+        background: linear-gradient(to bottom, rgba(255,255,255,0.5), transparent);
+        border-radius: 4px 4px 0 0; pointer-events: none;
+    }
+    /* LED aperture slot — recessed dark opening on the right face */
+    #strobe-tower::after {
+        content: ''; position: absolute;
+        right: -1px; top: 50%; transform: translateY(-50%);
+        width: 6px; height: 20px;
+        background: #111;
+        border-radius: 0 3px 3px 0;
+        box-shadow: inset 0 0 4px #000;
+    }
+
+    /* The red LED — oval, faces right toward the platter dots */
+    #strobe-light {
+        width: 10px; height: 16px;
+        background-color: #400;
+        border-radius: 2px 5px 5px 2px;
+        box-shadow: inset 0 0 4px #000;
+        transition: all 0.2s;
+        border: 1px solid #222;
+        margin-right: -2px;
+        z-index: 2;
+    }
+    #strobe-light.on {
+        background-color: #ff1a1a;
+        box-shadow:
+            4px 0 8px 2px rgba(255, 0, 0, 0.7),
+            8px 0 20px 4px rgba(255, 0, 0, 0.4),
+            15px 0 35px 6px rgba(255, 0, 0, 0.15);
+        border-color: #f44;
+    }
+
+    /* Focused red glow on the platter rim — directly in front of the LED */
+    #platter-glow {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        border-radius: 50%;
+        background: radial-gradient(
+            ellipse 18% 12% at 2% 50%,
+            rgba(255, 0, 0, 0.25) 0%,
+            rgba(255, 0, 0, 0.10) 40%,
+            transparent 100%
+        );
+        z-index: 4;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+    }
+    #platter-glow.on { opacity: 1; }
+
     /* PLATTER (Darker Rim) */
     #platter { 
         position: absolute; width: 63vmin; height: 63vmin; border-radius: 50%; 
@@ -311,19 +376,20 @@
         z-index: 2; 
     }
     
-    /* STROBE REFLECTION MASK */
+    /* STROBE REFLECTION MASK — narrow arc on left side where LED hits the dots */
     #strobe-dots-active {
-        position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; border-radius: 50%; 
-        border: 12px dotted #ff0000; z-index: 3; opacity: 0; 
-        clip-path: polygon(0% 100%, 0% 70%, 20% 100%); 
-        filter: drop-shadow(0 0 8px #ff0000); 
+        position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; border-radius: 50%;
+        border: 12px dotted #ff2200; z-index: 3; opacity: 0;
+        clip-path: polygon(0% 36%, 5% 46%, 5% 54%, 0% 64%);
+        filter: drop-shadow(0 0 6px rgba(255, 0, 0, 0.9));
     }
     #strobe-dots-active.on { opacity: 1; }
 
     #record-container { width: 94%; height: 94%; border-radius: 50%; position: relative; z-index: 5; }
     #record { width: 100%; height: 100%; border-radius: 50%; position: relative; transition: transform 0.1s linear; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     #record::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: conic-gradient(rgba(255,255,255,0) 0deg, rgba(255,255,255,0.1) 40deg, rgba(255,255,255,0.0) 60deg, rgba(255,255,255,0) 200deg, rgba(255,255,255,0.1) 220deg, rgba(255,255,255,0) 250deg); pointer-events: none; z-index: 10; }
-    .groove-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.15); pointer-events: none; z-index: 5; }
+    .groove-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.08); pointer-events: none; z-index: 5; }
+    .groove-separator { border-width: 2px; border-color: rgba(0, 0, 0, 0.25); }
     .spinning { animation: spin 1.8s infinite linear; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .strobe-cw { animation: spin-cw 0.5s linear infinite; }
@@ -383,6 +449,83 @@
     #loadUrlBtn { padding: 12px; background: #008888; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
     #cancelBtn { padding: 12px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; }
     #yt-container { width: 300%; height: 300%; position: absolute; top: -100%; left: -100%; pointer-events: none; opacity: 0; }
+
+    /* ========== RESPONSIVE ========== */
+
+    /* Medium screens */
+    @media (max-width: 1200px) {
+        #main-stage-wrapper { padding-left: 10px; }
+        #wood-base { padding: 20px; }
+        #arm-assembly { top: 15px; right: 15px; width: 140px; height: 140px; }
+        #arm-base { top: 15px; left: 15px; width: 100px; height: 100px; }
+        #arm-rotate { top: 65px; left: 65px; }
+        #pitch-container { right: 15px; height: 240px; width: 38px; }
+        #pitch-slot { height: 200px; }
+        .credit-footer { font-size: 11px; margin-top: 30px; }
+    }
+
+    /* Small screens — stack vertically */
+    @media (max-width: 900px) {
+        body { flex-direction: column; overflow: auto; height: auto; }
+        #left-console {
+            width: 100%; height: auto;
+            flex-direction: column;
+            border-right: none; border-bottom: 1px solid #333;
+            padding: 10px; gap: 10px;
+        }
+        #main-stage-wrapper {
+            width: 100%; height: auto;
+            padding: 20px 10px;
+            min-height: 70vw;
+        }
+        #plinth { width: 88vw; height: 64vw; }
+        #platter { width: 60vw; height: 60vw; }
+        #arm-stick { height: 42vw; }
+        #arm-assembly { top: 10px; right: 10px; width: 120px; height: 120px; }
+        #arm-base { top: 10px; left: 10px; width: 90px; height: 90px; }
+        #arm-rotate { top: 55px; left: 55px; }
+        #pitch-container { right: 10px; height: 200px; width: 32px; }
+        #pitch-slot { height: 160px; }
+        #wood-base { padding: 15px; }
+        .knobs-row { gap: 20px; }
+        .knob-wrapper { width: 80px; height: 110px; }
+        .knob-dial { width: 80px; height: 80px; }
+        .metal-knob { width: 56px; height: 56px; top: 12px; }
+        #controls-container { padding: 15px; }
+        #playlist-panel { height: 150px; }
+        #strobe-tower { width: 24px; height: 55px; }
+        #strobe-light { width: 9px; height: 14px; }
+        .credit-footer { font-size: 10px; margin-top: 20px; }
+    }
+
+    /* Very small screens */
+    @media (max-width: 500px) {
+        #plinth { width: 92vw; height: 68vw; }
+        #platter { width: 62vw; height: 62vw; }
+        #arm-stick { height: 44vw; }
+        .knobs-row { gap: 12px; }
+        .knob-wrapper { width: 65px; height: 95px; }
+        .knob-dial { width: 65px; height: 65px; }
+        .metal-knob { width: 45px; height: 45px; top: 10px; }
+        .knob-label { font-size: 8px; }
+        #rpm-group { gap: 8px; }
+        .rpm-btn { width: 38px; height: 42px; font-size: 10px; }
+        #startStopBtn { width: 120px; height: 45px; font-size: 10px; }
+        #io-group { gap: 10px; }
+        .round-btn { width: 48px; height: 48px; font-size: 8px; }
+        #powerBtn { width: 55px; height: 55px; }
+        #power-icon { font-size: 22px; }
+        .cue-btn { width: 42px; height: 42px; font-size: 12px; }
+        #strobe-tower { width: 22px; height: 50px; }
+        #strobe-light { width: 8px; height: 12px; }
+        #pitch-container { right: 5px; height: 160px; width: 28px; }
+        #pitch-slot { height: 130px; }
+        #pitch-knob { width: 28px; height: 40px; }
+        .foot { width: 50px; height: 25px; bottom: -12px; }
+        #foot-left { left: 30px; }
+        #foot-right { right: 30px; }
+        #modalContent { width: 280px; padding: 20px; }
+    }
   </style>
 </head>
 <body class="">
@@ -496,6 +639,7 @@
                   <div id="platter">
                       <div id="strobe-dots"></div>
                       <div id="strobe-dots-active"></div>
+                      <div id="platter-glow"></div>
                       <div id="record-container">
                         <div id="record">
                           <div id="label">
@@ -591,6 +735,7 @@
     const pitchKnob = document.getElementById('pitch-knob');
     const localBtn = document.getElementById('localBtn');
     const streamBtn = document.getElementById('streamBtn');
+    const platterGlow = document.getElementById('platter-glow');
 
     // SETUP SPECTRUM (65 LEDs)
     const specRow1 = document.getElementById('led-track-l');
@@ -830,7 +975,7 @@
             playlistPanel.appendChild(div);
             getDuration(file).then(dur => { document.getElementById(`dur-${i}`).innerText = dur; });
         }
-        drawGrooves(fileList.length + 5); 
+        drawGrooves(fileList.length);
     }
     
     function getDuration(file) { return new Promise((resolve) => { const objectUrl = URL.createObjectURL(file); const tempAudio = new Audio(objectUrl); tempAudio.addEventListener('loadedmetadata', () => { const d = tempAudio.duration; const m = Math.floor(d/60); const s = Math.floor(d%60); URL.revokeObjectURL(objectUrl); resolve(`${m}:${s.toString().padStart(2,'0')}`); }); tempAudio.addEventListener('error', () => resolve("?:?")); }); }
@@ -848,11 +993,11 @@
     powerBtn.addEventListener('click', () => { document.body.classList.toggle('powered-on'); if (!document.body.classList.contains('powered-on')) { stopMotor(); } else { initAudio(); if(audioCtx.state==='suspended') audioCtx.resume(); } });
     startStopBtn.addEventListener('click', () => { if (!document.body.classList.contains('powered-on')) return; motorOn = !motorOn; if (motorOn) { startLed.classList.add('lit'); startVisuals(); if(mode==='LOCAL') audio.play().catch(e=>console.log(e)); if(mode==='YOUTUBE' && ytPlayer) ytPlayer.playVideo(); } else { stopMotor(); } });
 
-    function startVisuals() { strobeLight.classList.add('on'); strobeDotsRed.classList.add('on'); record.classList.add('spinning'); strobeDots.style.animationPlayState = 'running'; strobeDotsRed.style.animationPlayState = 'running'; record.style.animationPlayState='running'; applySpeed(); if(mode === 'LOCAL') startArtShuffle(); if(analyzerInterval) clearInterval(analyzerInterval); analyzerInterval = setInterval(updateMeters, 50); }
+    function startVisuals() { strobeLight.classList.add('on'); strobeDotsRed.classList.add('on'); platterGlow.classList.add('on'); record.classList.add('spinning'); strobeDots.style.animationPlayState = 'running'; strobeDotsRed.style.animationPlayState = 'running'; record.style.animationPlayState='running'; applySpeed(); if(mode === 'LOCAL') startArtShuffle(); if(analyzerInterval) clearInterval(analyzerInterval); analyzerInterval = setInterval(updateMeters, 50); }
     
     function stopMotor() { 
         motorOn = false; 
-        startLed.classList.remove('lit'); strobeLight.classList.remove('on'); strobeDotsRed.classList.remove('on'); 
+        startLed.classList.remove('lit'); strobeLight.classList.remove('on'); strobeDotsRed.classList.remove('on'); platterGlow.classList.remove('on');
         record.style.animationPlayState='paused'; strobeDots.style.animationPlayState = 'paused'; strobeDotsRed.style.animationPlayState = 'paused'; strobeDots.className = ''; strobeDotsRed.className = ''; 
         
         audio.pause(); 
@@ -891,15 +1036,29 @@
     audio.addEventListener('timeupdate', () => { if (!isNaN(audio.duration)) { updateHUD(audio.currentTime, audio.duration); updateArmFromTime(audio.currentTime, audio.duration); } });
     audio.addEventListener('ended', () => { if (currentTrackIndex < audioFiles.length - 1) { loadTrackLocal(currentTrackIndex + 1); if(motorOn) audio.play(); } else { stopMotor(); } });
     function formatTime(s) { if(isNaN(s)) return "00:00"; let m = Math.floor(s/60); let sec = Math.floor(s%60); return (m<10?"0"+m:m) + ":" + (sec<10?"0"+sec:sec); }
-    function drawGrooves(cnt) { 
+    function drawGrooves(trackCount) {
         let old = record.querySelectorAll('.groove-line'); old.forEach(o => o.remove());
-        let step = PLAYABLE_ARC / cnt; 
-        for (let i = 1; i < cnt; i++) { 
-            let groove = document.createElement('div'); groove.className = 'groove-line'; 
-            let rp = 100 - (((step*i)/PLAYABLE_ARC) * (100 - 35)); 
-            groove.style.width = rp + '%'; groove.style.height = rp + '%'; 
-            record.appendChild(groove); 
-        } 
+        if (trackCount < 1) return;
+
+        // Fine sub-grooves per track for realistic vinyl look
+        let linesPerTrack = Math.max(2, Math.min(6, Math.round(30 / trackCount)));
+        let totalLines = trackCount * linesPerTrack;
+
+        for (let i = 1; i <= totalLines; i++) {
+            let groove = document.createElement('div');
+            // Linear from 100% (outer edge) to 35% (label edge)
+            let size = 100 - ((i / totalLines) * 65);
+            groove.style.width = size + '%';
+            groove.style.height = size + '%';
+
+            // Track boundary separator: every linesPerTrack-th line (but not the very last)
+            if (i % linesPerTrack === 0 && i < totalLines) {
+                groove.className = 'groove-line groove-separator';
+            } else {
+                groove.className = 'groove-line';
+            }
+            record.appendChild(groove);
+        }
     }
   </script>
 </body>
